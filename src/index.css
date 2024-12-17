@@ -1,0 +1,22 @@
+/* index.css or App.css */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* Prevents default scrollbars */
+}
+
+/* Hides scrollbar for Webkit browsers */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hides scrollbar in Firefox */
+body {
+  scrollbar-width: none;
+}
+
+/* Allows content scrolling without showing the scrollbar */
+body {
+  overflow: scroll;
+}
