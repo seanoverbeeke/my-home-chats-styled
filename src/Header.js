@@ -1,23 +1,26 @@
+// src/Header.js
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material';
-import HomeIcon from '@mui/icons-material/Home';  // Import the HomeIcon
-import MenuIcon from '@mui/icons-material/Menu';  // Import the hamburger icon
+import HomeIcon from '@mui/icons-material/Home';
+import MenuIcon from '@mui/icons-material/Menu';
+import { Link } from 'react-router-dom';
 
 function Header() {
-  const [anchorEl, setAnchorEl] = useState(null); // State to control the menu opening
+  const [anchorEl, setAnchorEl] = useState(null);
+
   const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget); // Open the menu when the hamburger icon is clicked
+    setAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = () => {
-    setAnchorEl(null); // Close the menu
+    setAnchorEl(null);
   };
 
   return (
     <AppBar
       position="static"
       sx={{
-        backgroundColor: 'white', // Keep this color for the AppBar background
+        backgroundColor: 'white',
         borderRadius: 0,
         boxShadow: 'none',
       }}
@@ -28,8 +31,12 @@ function Header() {
           padding: '0 16px',
         }}
       >
-        {/* Home Icon with color #F43F5E */}
-        <HomeIcon sx={{ color: '#F43F5E' }} /> 
+        {/* Home Icon wrapped with Link to navigate back to the homepage */}
+        <Link to="/" style={{ textDecoration: 'none' }}>
+          <IconButton edge="start" color="inherit" aria-label="home">
+            <HomeIcon sx={{ color: '#F43F5E' }} />
+          </IconButton>
+        </Link>
 
         <Typography variant="h6" sx={{ flexGrow: 1, color: '#F43F5E' }}>
           MyHomeChats
@@ -40,7 +47,7 @@ function Header() {
           edge="end"
           color="inherit"
           aria-label="menu"
-          onClick={handleMenuOpen} // Open the menu when clicked
+          onClick={handleMenuOpen}
         >
           <MenuIcon sx={{ color: '#F43F5E' }} />
         </IconButton>
@@ -48,11 +55,11 @@ function Header() {
         {/* Menu */}
         <Menu
           anchorEl={anchorEl}
-          open={Boolean(anchorEl)} // Check if menu is open
-          onClose={handleMenuClose} // Close the menu when clicked outside
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
         >
-          <MenuItem onClick={handleMenuClose}>Login</MenuItem> {/* Login option */}
-          <MenuItem onClick={handleMenuClose}>Sign Up</MenuItem> {/* Sign Up option */}
+          <MenuItem onClick={handleMenuClose}>Login</MenuItem>
+          <MenuItem onClick={handleMenuClose}>Sign Up</MenuItem>
         </Menu>
       </Toolbar>
     </AppBar>

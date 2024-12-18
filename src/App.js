@@ -1,22 +1,22 @@
 // src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Header from './Header';  // Import the Header component
-import Landing from './Landing';  // Import the Landing component
+import { ThemeProvider } from '@mui/material/styles';
+import Header from './Header';
+import Landing from './Landing';
+import theme from './theme'; // Import the custom theme
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Header />  {/* Include Header at the top */}
-
-        {/* Set up routes */}
+    <ThemeProvider theme={theme}>
+      <Router>
+        <Header />
         <Routes>
-          <Route path="/" element={<Landing />} />  {/* Landing page */}
-          {/* Add other routes as needed here */}
+          <Route path="/" element={<Landing />} />
+          {/* Add more routes here as needed */}
         </Routes>
-      </div>
-    </Router>
+      </Router>
+    </ThemeProvider>
   );
 }
 
