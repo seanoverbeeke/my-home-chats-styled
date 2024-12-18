@@ -44,7 +44,7 @@ function Landing() {
         }}
       >
         <img
-          src="/img/product2.webp"
+          src="/img/product2.png"
           alt="Smart AI Assistant"
           style={{
             width: '100%',
@@ -118,7 +118,7 @@ function Landing() {
         }}
       >
         <img
-          src="/img/product1.webp"
+          src="/img/product1.png"
           alt="Smart AI Assistant"
           style={{
             width: '100%',
