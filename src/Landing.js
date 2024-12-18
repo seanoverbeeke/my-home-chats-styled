@@ -19,6 +19,20 @@ function Landing() {
         paddingTop: '50px',
       }}
     >
+  
+  {/* Header 1 */}
+        <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 600,
+          fontSize: { xs: '2rem', sm: '3rem' },
+          marginTop: '20px',
+          textAlign: 'center',
+        }}
+      >
+        Every place<br />has a story.
+      </Typography>
+
  {/* Image Block */}
  <Box
         sx={{
@@ -54,7 +68,7 @@ function Landing() {
           textAlign: 'center',
         }}
       >
-        Let your property<br />speak for itself.
+        Let your rental<br />speak for itself.
       </Typography>
 
       {/* Image Block */}
