@@ -12,25 +12,25 @@ function Landing() {
         flexDirection: 'column',
         justifyContent: 'flex-start',
         alignItems: 'center',
-        height: '100vh',
+        minHeight: '100vh', // Ensures the Box takes full height
         textAlign: 'center',
         fontFamily: 'Inter, sans-serif',
+        overflowY: 'auto', // Ensures the content scrolls
         paddingTop: '50px',
-        overflowY: 'scroll',
       }}
     >
-    {/* Header Text */}
-<Typography
-  variant="h4"
-  sx={{
-    fontWeight: 600,
-    fontSize: { xs: '2rem', sm: '3rem' },
-    marginTop: '20px',
-    textAlign: 'center', // Optional: to center the text
-  }}
->
-  Let your property<br />speak for itself.
-</Typography>
+      {/* Header Text */}
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 600,
+          fontSize: { xs: '2rem', sm: '3rem' },
+          marginTop: '20px',
+          textAlign: 'center',
+        }}
+      >
+        Let your property<br />speak for itself.
+      </Typography>
 
       {/* Image Block */}
       <Box
@@ -49,13 +49,12 @@ function Landing() {
             width: '100%',
             maxWidth: '300px',
             height: 'auto',
-            visibility: 'visible',
           }}
         />
       </Box>
 
-        {/* Text Description */}
-        <Typography
+      {/* Text Description */}
+      <Typography
         variant="h5"
         sx={{
           fontWeight: 400,
@@ -68,7 +67,6 @@ function Landing() {
         Create personalized AI chatbots for each of your rental properties. Provide instant
         support to your guests 24/7.
       </Typography>
-
 
       {/* Action Buttons */}
       <Box
@@ -114,7 +112,6 @@ function Landing() {
         >
           Watch Demo
         </Button>
-
       </Box>
 
       {/* Features Section */}
@@ -257,154 +254,172 @@ function Landing() {
       </Box>
 
       <Button
-  variant="contained"
-  sx={{
-    backgroundColor: '#F43F5E',
-    color: 'white',
-    padding: '12px 40px',
-    borderRadius: '30px',
-    '&:hover': {
-      backgroundColor: '#D43852',
-    },
-    width: '100%',
-    maxWidth: '250px',
-    marginTop: '50px', // Added space between the button and the "Boost Bookings" box
-  }}
->
-  GET STARTED
-</Button>
+        variant="contained"
+        sx={{
+          backgroundColor: '#F43F5E',
+          color: 'white',
+          padding: '12px 40px',
+          borderRadius: '30px',
+          '&:hover': {
+            backgroundColor: '#D43852',
+          },
+          width: '100%',
+          maxWidth: '250px',
+          marginTop: '50px',
+        }}
+      >
+        GET STARTED
+      </Button>
 
-
-{/* Testimonials Section */}
-<Box
-  sx={{
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginTop: '50px',
-    width: '100%',
-    padding: '0 20px',
-  }}
->
-  <Typography
-    variant="h5"
-    sx={{
-      fontWeight: 600,
-      fontSize: { xs: '2rem', sm: '2.5rem' },
-      marginBottom: '30px',
-    }}
-  >
-    What Our Clients Say
-  </Typography>
-
-  <Grid container spacing={3} sx={{ display: 'flex', justifyContent: 'center' }}>
-    {/* Testimonial 1 */}
-    <Grid item xs={12} sm={4}>
+      {/* Testimonials Section */}
       <Box
         sx={{
-          backgroundColor: '#f5f5f5',
-          padding: '30px',
-          borderRadius: '15px',
-          textAlign: 'center',
-          boxShadow: 3,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          marginTop: '50px',
+          width: '100%',
+          padding: '0 20px',
         }}
       >
-        <Avatar
-          src="/img/host1.png"
-          sx={{
-            width: 100,
-            height: 100,
-            marginBottom: '20px',
-          }}
-        />
         <Typography
-          sx={{
-            fontStyle: 'italic',
-            fontWeight: 400,
-            marginTop: '10px',
-          }}
-        >
-          "MyHomeChats has revolutionized how I manage my properties. Guest satisfaction has never been higher!"
-        </Typography>
-        <Typography
+          variant="h5"
           sx={{
             fontWeight: 600,
-            marginTop: '15px',
+            fontSize: { xs: '2rem', sm: '2.5rem' },
+            marginBottom: '30px',
           }}
         >
-          Sarah K
+          What Our Clients Say
         </Typography>
-        <Typography
-          sx={{
-            fontWeight: 400,
-            marginTop: '5px', // Adjusted spacing between name and title
-          }}
-        >
-          Superhost
-        </Typography>
-      </Box>
-    </Grid>
 
-    {/* Testimonial 2 */}
-    <Grid item xs={12} sm={4}>
-      <Box
-        sx={{
-          backgroundColor: '#f5f5f5',
-          padding: '30px',
-          borderRadius: '15px',
-          textAlign: 'center',
-          boxShadow: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Avatar
-          src="/img/host2.png"
-          sx={{
-            width: 100,
-            height: 100,
-            marginBottom: '20px',
-          }}
-        />
-        <Typography
-          sx={{
-            fontStyle: 'italic',
-            fontWeight: 400,
-            marginTop: '10px',
-          }}
-        >
-          "This is a game-changer for my vacation rentals. I can now focus on more important tasks while MyHomeChats handles the rest."
-        </Typography>
-        <Typography
-          sx={{
-            fontWeight: 600,
-            marginTop: '15px',
-          }}
-        >
-          John M
-        </Typography>
-        <Typography
-          sx={{
-            fontWeight: 400,
-            marginTop: '5px', // Adjusted spacing between name and title
-          }}
-        >
-          Property Manager
-        </Typography>
-      </Box>
-    </Grid>
-  </Grid>
-</Box>
+        <Grid container spacing={3} sx={{ display: 'flex', justifyContent: 'center' }}>
+          {/* Testimonial 1 */}
+          <Grid item xs={12} sm={4}>
+            <Box
+              sx={{
+                backgroundColor: '#f5f5f5',
+                padding: '30px',
+                borderRadius: '15px',
+                textAlign: 'center',
+                boxShadow: 3,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}
+            >
+              <Avatar
+                src="/img/host1.png"
+                sx={{
+                  width: 100,
+                  height: 100,
+                  marginBottom: '20px',
+                }}
+              />
+              <Typography
+                sx={{
+                  fontWeight: 600,
+                  marginBottom: '10px',
+                }}
+              >
+                John D.
+              </Typography>
+              <Typography
+                sx={{
+                  fontStyle: 'italic',
+                }}
+              >
+                "My guests love the instant responses and the AI chatbot. It saves me so much time!"
+              </Typography>
+            </Box>
+          </Grid>
 
+          {/* Testimonial 2 */}
+          <Grid item xs={12} sm={4}>
+            <Box
+              sx={{
+                backgroundColor: '#f5f5f5',
+                padding: '30px',
+                borderRadius: '15px',
+                textAlign: 'center',
+                boxShadow: 3,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}
+            >
+              <Avatar
+                src="/img/host2.png"
+                sx={{
+                  width: 100,
+                  height: 100,
+                  marginBottom: '20px',
+                }}
+              />
+              <Typography
+                sx={{
+                  fontWeight: 600,
+                  marginBottom: '10px',
+                }}
+              >
+                Sarah M.
+              </Typography>
+              <Typography
+                sx={{
+                  fontStyle: 'italic',
+                }}
+              >
+                "The personalized AI made managing my property so much easier. Highly recommend!"
+              </Typography>
+            </Box>
+          </Grid>
+
+          {/* Testimonial 3 */}
+          <Grid item xs={12} sm={4}>
+            <Box
+              sx={{
+                backgroundColor: '#f5f5f5',
+                padding: '30px',
+                borderRadius: '15px',
+                textAlign: 'center',
+                boxShadow: 3,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}
+            >
+              <Avatar
+                src="/img/host3.png"
+                sx={{
+                  width: 100,
+                  height: 100,
+                  marginBottom: '20px',
+                }}
+              />
+                          <Typography
+                sx={{
+                  fontWeight: 600,
+                  marginBottom: '10px',
+                }}
+              >
+                Emily S.
+              </Typography>
+              <Typography
+                sx={{
+                  fontStyle: 'italic',
+                }}
+              >
+                "I can't imagine going back to managing bookings manually. The AI helps at all hours."
+              </Typography>      
+            </Box>
+          </Grid>
+        </Grid>
+      </Box>
 
       {/* Footer */}
       <Box
         sx={{
-          marginTop: '50px',
+          marginTop: '70px',
           width: '100%',
           padding: '10px 20px',
           backgroundColor: '#F43F5E',
@@ -413,7 +428,7 @@ function Landing() {
         }}
       >
         <Typography variant="body2" sx={{ fontWeight: 400 }}>
-          © 2025 MyHomeChats. All Rights Reserved.
+          © 2024 MyHomeChats. All Rights Reserved.
         </Typography>
       </Box>
     </Box>
@@ -421,3 +436,4 @@ function Landing() {
 }
 
 export default Landing;
+
