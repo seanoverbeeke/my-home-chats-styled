@@ -278,7 +278,7 @@ function Landing() {
           flexDirection: 'column',
           alignItems: 'center',
           marginTop: '50px',
-          width: '100%',
+          width: '85%',
           padding: '0 20px',
         }}
       >
@@ -322,7 +322,7 @@ function Landing() {
                   marginBottom: '10px',
                 }}
               >
-                John D.
+                Sara C.
               </Typography>
               <Typography
                 sx={{
@@ -362,7 +362,7 @@ function Landing() {
                   marginBottom: '10px',
                 }}
               >
-                Sarah M.
+                John B.
               </Typography>
               <Typography
                 sx={{
@@ -374,52 +374,14 @@ function Landing() {
             </Box>
           </Grid>
 
-          {/* Testimonial 3 */}
-          <Grid item xs={12} sm={4}>
-            <Box
-              sx={{
-                backgroundColor: '#f5f5f5',
-                padding: '30px',
-                borderRadius: '15px',
-                textAlign: 'center',
-                boxShadow: 3,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-              }}
-            >
-              <Avatar
-                src="/img/host3.png"
-                sx={{
-                  width: 100,
-                  height: 100,
-                  marginBottom: '20px',
-                }}
-              />
-                          <Typography
-                sx={{
-                  fontWeight: 600,
-                  marginBottom: '10px',
-                }}
-              >
-                Emily S.
-              </Typography>
-              <Typography
-                sx={{
-                  fontStyle: 'italic',
-                }}
-              >
-                "I can't imagine going back to managing bookings manually. The AI helps at all hours."
-              </Typography>      
-            </Box>
-          </Grid>
+        
         </Grid>
       </Box>
 
       {/* Footer */}
       <Box
         sx={{
-          marginTop: '70px',
+          marginTop: '50px',
           width: '100%',
           padding: '10px 20px',
           backgroundColor: '#F43F5E',
