@@ -19,6 +19,31 @@ function Landing() {
         paddingTop: '50px',
       }}
     >
+ {/* Image Block */}
+ <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginTop: '30px',
+          marginBottom: '20px',
+          width: '100%',
+        }}
+      >
+        <img
+          src="/img/product2.webp"
+          alt="Smart AI Assistant"
+          style={{
+            width: '100%',
+            maxWidth: '300px',
+            height: 'auto',
+            borderRadius: '15px',
+            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',  // Adding a shadow
+          }}
+        />
+      </Box>
+
+
+
       {/* Header Text */}
       <Typography
         variant="h4"
@@ -67,6 +92,29 @@ function Landing() {
         Create personalized AI chatbots for each of your rental properties. Provide instant
         support to your guests 24/7.
       </Typography>
+
+       {/* Image Block */}
+       <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginTop: '30px',
+          marginBottom: '20px',
+          width: '100%',
+        }}
+      >
+        <img
+          src="/img/product1.webp"
+          alt="Smart AI Assistant"
+          style={{
+            width: '100%',
+            maxWidth: '300px',
+            height: 'auto',
+            borderRadius: '15px',
+            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',  // Adding a shadow
+          }}
+        />
+      </Box>
 
       {/* Action Buttons */}
       <Box
