@@ -60,7 +60,7 @@ function Header() {
         >
           <MenuItem onClick={handleMenuClose}>Login</MenuItem>
           <MenuItem onClick={handleMenuClose}>Sign Up</MenuItem>
-          <MenuItem component={Link} to="/survey" onClick={handleMenuClose}>Survey</MenuItem>
+          <MenuItem component={Link} to="/dashboard" onClick={handleMenuClose}>Dashboard</MenuItem>
         </Menu>
       </Toolbar>
     </AppBar>
