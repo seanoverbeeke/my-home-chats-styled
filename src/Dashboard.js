@@ -6,28 +6,76 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
 function Dashboard() {
-  // Initialize with data from localStorage or empty array
+  // Initialize state with a try-catch to handle potential JSON parsing errors
   const [properties, setProperties] = useState(() => {
-    const savedProperties = localStorage.getItem('properties');
-    return savedProperties ? JSON.parse(savedProperties) : [];
+    try {
+      const savedProperties = localStorage.getItem('properties');
+      return savedProperties ? JSON.parse(savedProperties) : [];
+    } catch (error) {
+      console.error('Error loading properties from localStorage:', error);
+      return [];
+    }
   });
+
   const [newPropertyName, setNewPropertyName] = useState('');
   const [showNewPropertyField, setShowNewPropertyField] = useState(false);
 
+  // Save properties to localStorage whenever properties change
   useEffect(() => {
-    localStorage.setItem('properties', JSON.stringify(properties));
+    try {
+      localStorage.setItem('properties', JSON.stringify(properties));
+    } catch (error) {
+      console.error('Error saving properties to localStorage:', error);
+    }
   }, [properties]);
 
   const handleAddProperty = () => {
     if (newPropertyName.trim() === '') return;
+
     const newProperty = {
-      id: Date.now(), // Use timestamp as unique ID
+      id: Date.now(),
       name: newPropertyName.trim(),
       status: 'Active',
       bio: '',
-      surveyData: {}
+      surveyData: {
+        hostInfo: '',
+        wifi: 'no',
+        wifiName: '',
+        wifiPassword: '',
+        hasTowels: 'no',
+        towelsLocation: '',
+        hasExtraSheets: 'no',
+        sheetsLocation: '',
+        hasCoffeeMachine: 'no',
+        coffeeMachineLocation: '',
+        hasPullOutSofa: 'no',
+        sofaDetails: '',
+        hasLocalFood: 'no',
+        breakfastSpots: '',
+        lunchSpots: '',
+        dinnerSpots: '',
+        hasThermostat: 'no',
+        thermostatLocation: '',
+        hasTransportation: 'no',
+        transportationDetails: '',
+        hasAppliances: 'no',
+        applianceDetails: '',
+        hasCheckoutProcedures: 'no',
+        checkoutDetails: '',
+        emergencyContact: '',
+        hasFirstAid: 'no',
+        firstAidLocation: '',
+        nearestHospital: '',
+        hasLocalAttractions: 'no',
+        attractionsDetails: '',
+        conciergeStyle: ''
+      }
     };
-    setProperties([...properties, newProperty]);
+
+    // Update state with the new property
+    setProperties(prevProperties => [...prevProperties, newProperty]);
+
+    // Reset form
     setNewPropertyName('');
     setShowNewPropertyField(false);
   };
@@ -39,7 +87,6 @@ function Dashboard() {
 
   return (
     <Box sx={{ flexGrow: 1, padding: { xs: '10px', sm: '20px' }, backgroundColor: '#f5f5f5', display: 'flex', flexDirection: 'column' }}>
-      {/* MyHomeChat Properties Section */}
       <Typography variant="h5" sx={{ marginBottom: '20px', fontWeight: 600, textAlign: 'center' }}>
         MyHomeChat Properties
       </Typography>
@@ -48,7 +95,6 @@ function Dashboard() {
         {properties.map((property) => (
           <Grid item xs={12} sm={6} md={4} key={property.id}>
             <Card sx={{ borderRadius: '10px', boxShadow: 3, position: 'relative' }}>
-              {/* Delete Button */}
               <IconButton
                 onClick={() => handleDeleteProperty(property.id)}
                 sx={{
@@ -57,6 +103,7 @@ function Dashboard() {
                   right: 10,
                   color: '#F43F5E',
                 }}
+                aria-label={`delete ${property.name}`}
               >
                 <DeleteIcon />
               </IconButton>
@@ -79,7 +126,7 @@ function Dashboard() {
                       width: '100%',
                     }}
                   >
-                    Settings {/* Changed from "Setup" to "Settings" */}
+                    Settings
                   </Button>
                 </Link>
               </CardContent>
@@ -88,7 +135,6 @@ function Dashboard() {
         ))}
       </Grid>
 
-      {/* Add Property Section */}
       <Grid container spacing={3} sx={{ marginTop: '30px', justifyContent: 'center' }}>
         <Grid item xs={12} sm={6} md={4}>
           <Card sx={{ borderRadius: '10px', boxShadow: 3 }}>
@@ -105,8 +151,8 @@ function Dashboard() {
                   alignItems: 'center',
                   borderRadius: '30px',
                 }}
+                startIcon={<AddIcon />}
               >
-                <AddIcon sx={{ marginRight: '10px' }} />
                 Add Property
               </Button>
 
