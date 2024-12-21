@@ -7,59 +7,78 @@ import {
   Button,
   TextField,
   Collapse,
-  FormControl,
-  ButtonGroup,
+  FormControlLabel,
+  Switch,
   LinearProgress,
   Grid,
-  IconButton
+  Paper,
+  Divider,
+  Container,
+  Slider,
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import RefreshIcon from '@mui/icons-material/Refresh'; // Icon for reset button
 
 function Survey() {
   const { propertyId } = useParams();
   const navigate = useNavigate();
 
-  // State for survey data
-  const [formData, setFormData] = useState({
+  // Define all boolean fields to ensure they are always present
+  const booleanFields = [
+    'wifi',
+    'hasTowels',
+    'hasExtraSheets',
+    'hasCoffeeMachine',
+    'hasPullOutSofa',
+    'hasLocalFood',
+    'hasThermostat',
+    'hasTransportation',
+    'hasAppliances',
+    'hasCheckoutProcedures',
+    'hasFirstAid',
+    'hasLocalAttractions'
+  ];
+
+  // Initialize formData with all boolean fields set to false and other fields as empty strings
+  const initialFormData = {
     hostInfo: '',
-    wifi: 'no',
+    wifi: false,
     wifiName: '',
     wifiPassword: '',
-    hasTowels: 'no',
+    hasTowels: false,
     towelsLocation: '',
-    hasExtraSheets: 'no',
+    hasExtraSheets: false,
     sheetsLocation: '',
-    hasCoffeeMachine: 'no',
+    hasCoffeeMachine: false,
     coffeeMachineLocation: '',
-    hasPullOutSofa: 'no',
+    hasPullOutSofa: false,
     sofaDetails: '',
-    hasLocalFood: 'no',
+    hasLocalFood: false,
     breakfastSpots: '',
     lunchSpots: '',
     dinnerSpots: '',
-    hasThermostat: 'no',
+    hasThermostat: false,
     thermostatLocation: '',
-    hasTransportation: 'no',
+    hasTransportation: false,
     transportationDetails: '',
-    hasAppliances: 'no',
+    hasAppliances: false,
     applianceDetails: '',
-    hasCheckoutProcedures: 'no',
+    hasCheckoutProcedures: false,
     checkoutDetails: '',
     emergencyContact: '',
-    hasFirstAid: 'no',
+    hasFirstAid: false,
     firstAidLocation: '',
     nearestHospital: '',
-    hasLocalAttractions: 'no',
+    hasLocalAttractions: false,
     attractionsDetails: '',
-    conciergeStyle: ''
-  });
+    conciergeStyle: 0 // Initialize as number (0: Casual, 100: Professional)
+  };
 
+  const [formData, setFormData] = useState(initialFormData);
   const [propertyName, setPropertyName] = useState('');
   const [editingFields, setEditingFields] = useState({});
-  const [tempFormData, setTempFormData] = useState({});
   const [tempPropertyName, setTempPropertyName] = useState('');
   const [progress, setProgress] = useState(0);
 
@@ -68,19 +87,48 @@ function Survey() {
     try {
       const storedProperties = JSON.parse(localStorage.getItem('properties')) || [];
       const property = storedProperties.find(prop => prop.id === Number(propertyId));
-      
+
       if (property) {
         setPropertyName(property.name || '');
         if (property.surveyData) {
-          setFormData(prevData => ({
-            ...prevData,
-            ...property.surveyData
-          }));
-          calculateProgress(property.surveyData);
+          // Merge saved surveyData with initialFormData to ensure all fields are present
+          const mergedData = { ...initialFormData, ...property.surveyData };
+
+          // Ensure all boolean fields are properly parsed
+          booleanFields.forEach(field => {
+            if (typeof mergedData[field] === 'string') {
+              // Convert string to boolean
+              mergedData[field] = mergedData[field].toLowerCase() === 'true';
+            } else {
+              // Ensure it's a boolean
+              mergedData[field] = Boolean(mergedData[field]);
+            }
+          });
+
+          // Ensure conciergeStyle is a number
+          if (typeof mergedData.conciergeStyle === 'string') {
+            mergedData.conciergeStyle = parseInt(mergedData.conciergeStyle, 10) || 0;
+          } else {
+            mergedData.conciergeStyle = Number(mergedData.conciergeStyle) || 0;
+          }
+
+          setFormData(mergedData);
+          calculateProgress(mergedData);
+        } else {
+          // If surveyData doesn't exist, use initialFormData
+          setFormData(initialFormData);
+          calculateProgress(initialFormData);
         }
+      } else {
+        // If property doesn't exist, use initialFormData
+        setFormData(initialFormData);
+        calculateProgress(initialFormData);
       }
     } catch (error) {
       console.error('Error loading property data:', error);
+      // In case of error, fallback to initialFormData
+      setFormData(initialFormData);
+      calculateProgress(initialFormData);
     }
   }, [propertyId]);
 
@@ -88,33 +136,64 @@ function Survey() {
   const saveToLocalStorage = () => {
     try {
       const storedProperties = JSON.parse(localStorage.getItem('properties')) || [];
+      let propertyExists = false;
+
       const updatedProperties = storedProperties.map(prop => {
         if (prop.id === Number(propertyId)) {
+          propertyExists = true;
+          // Ensure boolean fields are stored as booleans and conciergeStyle as number
+          const sanitizedSurveyData = { ...formData };
+          booleanFields.forEach(field => {
+            sanitizedSurveyData[field] = Boolean(sanitizedSurveyData[field]);
+          });
+          sanitizedSurveyData.conciergeStyle = Number(sanitizedSurveyData.conciergeStyle) || 0;
           return {
             ...prop,
             name: propertyName,
-            surveyData: formData
+            surveyData: sanitizedSurveyData
           };
         }
         return prop;
       });
-      
+
+      if (!propertyExists) {
+        // If property doesn't exist, add it
+        const sanitizedSurveyData = { ...formData };
+        booleanFields.forEach(field => {
+          sanitizedSurveyData[field] = Boolean(sanitizedSurveyData[field]);
+        });
+        sanitizedSurveyData.conciergeStyle = Number(sanitizedSurveyData.conciergeStyle) || 0;
+        updatedProperties.push({
+          id: Number(propertyId),
+          name: propertyName,
+          surveyData: sanitizedSurveyData
+        });
+      }
+
       localStorage.setItem('properties', JSON.stringify(updatedProperties));
+      console.log('Data saved to localStorage:', updatedProperties);
     } catch (error) {
       console.error('Error saving property data:', error);
     }
   };
 
   const calculateProgress = (data) => {
-    const totalQuestions = Object.keys(data).length;
-    const answered = Object.values(data).filter(value => value !== '' && value !== 'no').length;
+    // Exclude non-question fields from progress calculation
+    const questionFields = Object.keys(initialFormData).filter(
+      key => key !== 'hostInfo' && key !== 'emergencyContact' && key !== 'nearestHospital' && key !== 'conciergeStyle'
+    );
+
+    const totalQuestions = questionFields.length;
+    const answered = questionFields.reduce((acc, key) => {
+      if (booleanFields.includes(key)) {
+        return acc + (data[key] ? 1 : 0);
+      } else {
+        return acc + (data[key].trim() !== '' ? 1 : 0);
+      }
+    }, 0);
+
     const progressPercent = Math.round((answered / totalQuestions) * 100);
     setProgress(progressPercent);
-  };
-
-  // Handle changes in temporary form data
-  const handleChangeTemp = (field, value) => {
-    setTempFormData(prev => ({ ...prev, [field]: value }));
   };
 
   // Handlers for Property Name Editing
@@ -137,31 +216,9 @@ function Survey() {
   };
 
   // Handlers for Survey Data Editing
-  const handleEdit = (field) => {
-    setEditingFields(prev => ({ ...prev, [field]: true }));
-    setTempFormData(prev => ({ ...prev, [field]: formData[field] }));
-  };
-
-  const handleSave = (field) => {
-    const newFormData = { ...formData, ...tempFormData };
-    setFormData(newFormData);
-    setEditingFields(prev => ({ ...prev, [field]: false }));
-    setTempFormData(prev => {
-      const updated = { ...prev };
-      delete updated[field];
-      return updated;
-    });
-    calculateProgress(newFormData);
-    saveToLocalStorage();
-  };
-
-  const handleCancel = (field) => {
-    setEditingFields(prev => ({ ...prev, [field]: false }));
-    setTempFormData(prev => {
-      const updated = { ...prev };
-      delete updated[field];
-      return updated;
-    });
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    calculateProgress({ ...formData, [field]: value });
   };
 
   const handleSubmit = (e) => {
@@ -174,12 +231,59 @@ function Survey() {
     navigate('/dashboard');
   };
 
+  // Optional: Reset Survey Data
+  const resetSurveyData = () => {
+    if (window.confirm('Are you sure you want to reset the survey data? This action cannot be undone.')) {
+      try {
+        const storedProperties = JSON.parse(localStorage.getItem('properties')) || [];
+        const updatedProperties = storedProperties.map(prop => {
+          if (prop.id === Number(propertyId)) {
+            return {
+              ...prop,
+              surveyData: initialFormData
+            };
+          }
+          return prop;
+        });
+        localStorage.setItem('properties', JSON.stringify(updatedProperties));
+        setFormData(initialFormData);
+        setProgress(0);
+        window.location.reload(); // Reload to ensure all components reflect the reset
+      } catch (error) {
+        console.error('Error resetting survey data:', error);
+      }
+    }
+  };
+
+  // Mapping slider value to label
+  const getConciergeStyleLabel = (value) => {
+    if (value <= 33) return 'Casual';
+    if (value >= 67) return 'Professional';
+    return 'Neutral';
+  };
+
+  // Slider marks
+  const sliderMarks = [
+    {
+      value: 0,
+      label: 'Casual',
+    },
+    {
+      value: 50,
+      label: 'Neutral',
+    },
+    {
+      value: 100,
+      label: 'Professional',
+    },
+  ];
+
   // Questions configuration
   const questions = [
     {
       id: 'wifi',
-      mainQuestion: 'Does your property have WiFi?',
-      field: 'wifi',
+      label: 'wifi',
+      question: 'Does your property have WiFi?',
       followUp: [
         { label: 'WiFi Network Name', field: 'wifiName' },
         { label: 'WiFi Password', field: 'wifiPassword' }
@@ -187,32 +291,32 @@ function Survey() {
     },
     {
       id: 'hasTowels',
-      mainQuestion: 'Are there towels available for guests?',
-      field: 'hasTowels',
+      label: 'hasTowels',
+      question: 'Are there towels available for guests?',
       followUp: [{ label: 'Where are the towels located?', field: 'towelsLocation' }]
     },
     {
       id: 'hasExtraSheets',
-      mainQuestion: 'Are there extra bed sheets available?',
-      field: 'hasExtraSheets',
+      label: 'hasExtraSheets',
+      question: 'Are there extra bed sheets available?',
       followUp: [{ label: 'Where are the extra sheets located?', field: 'sheetsLocation' }]
     },
     {
       id: 'hasCoffeeMachine',
-      mainQuestion: 'Is there a coffee machine?',
-      field: 'hasCoffeeMachine',
+      label: 'hasCoffeeMachine',
+      question: 'Is there a coffee machine?',
       followUp: [{ label: 'Where is the coffee machine located?', field: 'coffeeMachineLocation' }]
     },
     {
       id: 'hasPullOutSofa',
-      mainQuestion: 'Are there any pull-out sofas?',
-      field: 'hasPullOutSofa',
+      label: 'hasPullOutSofa',
+      question: 'Are there any pull-out sofas?',
       followUp: [{ label: 'Please describe the pull-out sofa locations and instructions', field: 'sofaDetails' }]
     },
     {
       id: 'hasLocalFood',
-      mainQuestion: 'Would you like to share local food recommendations?',
-      field: 'hasLocalFood',
+      label: 'hasLocalFood',
+      question: 'Would you like to share local food recommendations?',
       followUp: [
         { label: 'Recommended breakfast spots', field: 'breakfastSpots' },
         { label: 'Recommended lunch spots', field: 'lunchSpots' },
@@ -221,318 +325,58 @@ function Survey() {
     },
     {
       id: 'hasThermostat',
-      mainQuestion: 'Is there a thermostat?',
-      field: 'hasThermostat',
+      label: 'hasThermostat',
+      question: 'Is there a thermostat?',
       followUp: [{ label: 'Where is the thermostat located and are there any special instructions?', field: 'thermostatLocation' }]
     },
     {
       id: 'hasTransportation',
-      mainQuestion: 'Are there local transportation options?',
-      field: 'hasTransportation',
+      label: 'hasTransportation',
+      question: 'Are there local transportation options?',
       followUp: [{ label: 'Please describe the transportation options', field: 'transportationDetails' }]
     },
     {
       id: 'hasAppliances',
-      mainQuestion: 'Are there any special appliance instructions?',
-      field: 'hasAppliances',
+      label: 'hasAppliances',
+      question: 'Are there any special appliance instructions?',
       followUp: [{ label: 'Please provide details about appliance usage', field: 'applianceDetails' }]
     },
     {
       id: 'hasCheckoutProcedures',
-      mainQuestion: 'Are there specific checkout procedures?',
-      field: 'hasCheckoutProcedures',
+      label: 'hasCheckoutProcedures',
+      question: 'Are there specific checkout procedures?',
       followUp: [{ label: 'Please describe the checkout procedures', field: 'checkoutDetails' }]
     },
     {
       id: 'hasFirstAid',
-      mainQuestion: 'Is there a first aid kit?',
-      field: 'hasFirstAid',
+      label: 'hasFirstAid',
+      question: 'Is there a first aid kit?',
       followUp: [{ label: 'Where is the first aid kit located?', field: 'firstAidLocation' }]
     },
     {
       id: 'hasLocalAttractions',
-      mainQuestion: 'Are there local attractions or activities you want to recommend?',
-      field: 'hasLocalAttractions',
+      label: 'hasLocalAttractions',
+      question: 'Are there local attractions or activities you want to recommend?',
       followUp: [{ label: 'Please describe the local attractions and activities', field: 'attractionsDetails' }]
     }
   ];
 
-  // Removed the hasSurveyData function and conditional rendering to prevent infinite loops
-  // Function to render saved survey data in read-only mode (optional, can be removed if not needed)
-  const renderSavedSurveyData = () => {
-    return (
-      <Box sx={{ width: '100%', maxWidth: '600px' }}>
-        {/* Host Information Section */}
-        <Box sx={{ marginBottom: '30px' }}>
-          <Typography variant="h6" sx={{ fontWeight: 500, marginBottom: '10px' }}>
-            What would you like your guests to know about their hosts?
-          </Typography>
-          {!editingFields.hostInfo ? (
-            <>
-              <Typography variant="body1" sx={{ marginBottom: '10px' }}>
-                {formData.hostInfo || 'N/A'}
-              </Typography>
-              <Button
-                variant="outlined"
-                startIcon={<EditIcon />}
-                onClick={() => handleEdit('hostInfo')}
-                sx={{
-                  marginTop: '10px',
-                  borderRadius: '30px',
-                  textTransform: 'none',
-                }}
-              >
-                Edit
-              </Button>
-            </>
-          ) : (
-            <Box>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                value={tempFormData.hostInfo || ''}
-                onChange={(e) => handleChangeTemp('hostInfo', e.target.value)}
-                variant="outlined"
-                sx={{ marginBottom: '20px' }}
-              />
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<CancelIcon />}
-                  onClick={() => handleCancel('hostInfo')}
-                  sx={{
-                    color: '#F43F5E',
-                    borderColor: '#F43F5E',
-                    borderRadius: '30px',
-                    textTransform: 'none',
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={() => handleSave('hostInfo')}
-                  sx={{
-                    backgroundColor: '#F43F5E',
-                    color: 'white',
-                    borderRadius: '30px',
-                    '&:hover': {
-                      backgroundColor: '#D43852',
-                    },
-                    textTransform: 'none',
-                  }}
-                >
-                  Save
-                </Button>
-              </Box>
-            </Box>
-          )}
-        </Box>
-
-        {/* Dynamic Questions */}
-        {questions.map((question) => (
-          <Box key={question.id} sx={{ marginBottom: '30px' }}>
-            <Typography variant="h6" sx={{ fontWeight: 500, marginBottom: '10px' }}>
-              {question.mainQuestion}
-            </Typography>
-            {!editingFields[question.id] ? (
-              <>
-                <Typography variant="body1" sx={{ marginBottom: '10px' }}>
-                  {formData[question.field] === 'yes' ? 'Yes' : 'No'}
-                </Typography>
-                {formData[question.field] === 'yes' && question.followUp.map((followUpQ, index) => (
-                  <Box key={index} sx={{ marginLeft: '20px', marginBottom: '10px' }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                      {followUpQ.label}
-                    </Typography>
-                    <Typography variant="body2">
-                      {formData[followUpQ.field] || 'N/A'}
-                    </Typography>
-                  </Box>
-                ))}
-                <Button
-                  variant="outlined"
-                  startIcon={<EditIcon />}
-                  onClick={() => handleEdit(question.id)}
-                  sx={{
-                    marginTop: '10px',
-                    borderRadius: '30px',
-                    textTransform: 'none',
-                  }}
-                >
-                  Edit
-                </Button>
-              </>
-            ) : (
-              <Box>
-                <FormControl component="fieldset">
-                  <ButtonGroup variant="contained" aria-label="yes-no button group" sx={{ mb: 2 }}>
-                    <Button
-                      onClick={() => handleChangeTemp(question.field, 'yes')}
-                      sx={{
-                        bgcolor: (tempFormData[question.field] || formData[question.field]) === 'yes' ? '#F43F5E' : 'grey.400',
-                        '&:hover': {
-                          bgcolor: (tempFormData[question.field] || formData[question.field]) === 'yes' ? '#D43852' : 'grey.500',
-                        }
-                      }}
-                    >
-                      Yes
-                    </Button>
-                    <Button
-                      onClick={() => handleChangeTemp(question.field, 'no')}
-                      sx={{
-                        bgcolor: (tempFormData[question.field] || formData[question.field]) === 'no' ? '#F43F5E' : 'grey.400',
-                        '&:hover': {
-                          bgcolor: (tempFormData[question.field] || formData[question.field]) === 'no' ? '#D43852' : 'grey.500',
-                        }
-                      }}
-                    >
-                      No
-                    </Button>
-                  </ButtonGroup>
-                </FormControl>
-
-                <Collapse in={(tempFormData[question.field] || formData[question.field]) === 'yes'}>
-                  <Box sx={{ mt: 2 }}>
-                  {question.followUp.map((followUpQ, fIndex) => (
-                      <TextField
-                        key={fIndex}
-                        fullWidth
-                        label={followUpQ.label}
-                        value={tempFormData[followUpQ.field] || ''}
-                        onChange={(e) => handleChangeTemp(followUpQ.field, e.target.value)}
-                        variant="outlined"
-                        multiline
-                        rows={2}
-                        sx={{ marginBottom: 2 }}
-                      />
-                    ))}
-                  </Box>
-                </Collapse>
-
-                {/* Save and Cancel Buttons */}
-                <Box sx={{ display: 'flex', gap: 2, marginTop: '10px' }}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<CancelIcon />}
-                    onClick={() => handleCancel(question.id)}
-                    sx={{
-                      color: '#F43F5E',
-                      borderColor: '#F43F5E',
-                      borderRadius: '30px',
-                      textTransform: 'none',
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="contained"
-                    startIcon={<SaveIcon />}
-                    onClick={() => handleSave(question.id)}
-                    sx={{
-                      backgroundColor: '#F43F5E',
-                      color: 'white',
-                      borderRadius: '30px',
-                      '&:hover': {
-                        backgroundColor: '#D43852',
-                      },
-                      textTransform: 'none',
-                    }}
-                  >
-                    Save
-                  </Button>
-                </Box>
-              </Box>
-            )}
-          </Box>
-        ))}
-
-        {/* Concierge Style Section */}
-        <Box sx={{ marginBottom: '30px' }}>
-          <Typography variant="h6" sx={{ fontWeight: 500, marginBottom: '10px' }}>
-            What style would you like your Concierge to have? (i.e. Funny, Serious, Helpful, Professional, Casual)
-          </Typography>
-          {!editingFields.conciergeStyle ? (
-            <>
-              <Typography variant="body1" sx={{ marginBottom: '10px' }}>
-                {formData.conciergeStyle || 'N/A'}
-              </Typography>
-              <Button
-                variant="outlined"
-                startIcon={<EditIcon />}
-                onClick={() => handleEdit('conciergeStyle')}
-                sx={{
-                  marginTop: '10px',
-                  borderRadius: '30px',
-                  textTransform: 'none',
-                }}
-              >
-                Edit
-              </Button>
-            </>
-          ) : (
-            <Box>
-              <TextField
-                fullWidth
-                value={tempFormData.conciergeStyle || ''}
-                onChange={(e) => handleChangeTemp('conciergeStyle', e.target.value)}
-                variant="outlined"
-                sx={{ marginBottom: '20px' }}
-              />
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<CancelIcon />}
-                  onClick={() => handleCancel('conciergeStyle')}
-                  sx={{
-                    color: '#F43F5E',
-                    borderColor: '#F43F5E',
-                    borderRadius: '30px',
-                    textTransform: 'none',
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={() => handleSave('conciergeStyle')}
-                  sx={{
-                    backgroundColor: '#F43F5E',
-                    color: 'white',
-                    borderRadius: '30px',
-                    '&:hover': {
-                      backgroundColor: '#D43852',
-                    },
-                    textTransform: 'none',
-                  }}
-                >
-                  Save
-                </Button>
-              </Box>
-            </Box>
-          )}
-        </Box>
-      </Box>
-    );
-  };
-
   return (
-    <Box
+    <Container
+      maxWidth="lg"
       sx={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: '20px',
+        paddingY: { xs: '10px', sm: '20px' },
         fontFamily: 'Inter, sans-serif',
         minHeight: '100vh',
         backgroundColor: '#f5f5f5',
       }}
     >
-      {/* Back to Dashboard Button */}
-      <Box sx={{ width: '100%', maxWidth: '600px', marginBottom: '20px' }}>
+
+      {/* Back to Dashboard Button and Reset Button */}
+      <Box sx={{ width: '100%', maxWidth: '800px', marginBottom: '2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: { xs: '10px', sm: '0' } }}>
         <Button
           variant="text"
           onClick={handleBackToDashboard}
@@ -545,24 +389,25 @@ function Survey() {
               backgroundColor: 'transparent',
               color: '#D43852',
             },
-            borderRadius: '30px',
+            borderRadius: '0px', // Removed border radius
             paddingX: 0,
+            fontSize: '15px',
           }}
         >
           Back to Dashboard
         </Button>
       </Box>
 
-      {/* Property Settings Header */}
-      <Box
+      {/* Navbar */}
+      <Paper
+        elevation={3}
         sx={{
           width: '100%',
-          bgcolor: '#F43F5E',
-          padding: '15px',
-          textAlign: 'center',
-          color: 'white',
+          maxWidth: '800px',
+          padding: { xs: '10px 15px', sm: '15px 30px' }, // Responsive padding
+          backgroundColor: '#F43F5E', // Branding color
           marginBottom: '20px',
-          borderRadius: '10px',
+          borderRadius: '0px', // Removed border radius
         }}
       >
         <Typography
@@ -570,169 +415,211 @@ function Survey() {
           sx={{
             fontWeight: 600,
             letterSpacing: '1px',
+            color: 'white', // White text for contrast
+            textAlign: 'center',
           }}
         >
-          PROPERTY SETTINGS
+          Property Settings
         </Typography>
-      </Box>
-
+      </Paper>
+      
       {/* Property Name Section */}
-      <Box
+      <Paper
+        elevation={3}
         sx={{
           width: '90%',
-          maxWidth: '600px',
+          maxWidth: '800px',
           backgroundColor: 'white',
-          padding: '20px',
-          borderRadius: '10px',
+          padding: { xs: '15px 20px', sm: '20px 30px' }, // Responsive padding
+          borderRadius: '0px', // Removed border radius
           boxShadow: 3,
           marginBottom: '30px',
         }}
       >
-        {!editingFields.propertyName ? (
-          <Grid container alignItems="center" justifyContent="space-between">
-            <Grid item>
-              <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                Property Name: {propertyName || 'N/A'}
-              </Typography>
-            </Grid>
-            <Grid item>
-              <IconButton onClick={handleEditPropertyName} color="primary" aria-label="edit property name">
-                <EditIcon />
-              </IconButton>
-            </Grid>
+        <Grid container alignItems="center" justifyContent="space-between">
+          <Grid item xs={12} sm={8}>
+            <Typography variant="h6" sx={{ fontWeight: 500 }}>
+              Property Name: {propertyName || 'N/A'}
+            </Typography>
           </Grid>
-        ) : (
-          <Box>
-            <TextField
-              fullWidth
-              value={tempPropertyName}
-              onChange={(e) => setTempPropertyName(e.target.value)}
-              variant="outlined"
-              label="Property Name"
-              sx={{ marginBottom: '20px' }}
-            />
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Grid item xs={12} sm={4} sx={{ textAlign: { xs: 'left', sm: 'right' }, marginTop: { xs: '10px', sm: '0' } }}>
+            {!editingFields.propertyName ? (
               <Button
-                variant="outlined"
-                startIcon={<CancelIcon />}
-                onClick={handleCancelEditPropertyName}
+                variant="text"
+                onClick={handleEditPropertyName}
                 sx={{
-                  color: '#F43F5E',
-                  borderColor: '#F43F5E',
-                  marginRight: '10px',
-                  borderRadius: '30px',
+                  color: '#F43F5E', // Branding color
                   textTransform: 'none',
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<SaveIcon />}
-                onClick={handleSavePropertyName}
-                sx={{
-                  backgroundColor: '#F43F5E',
-                  color: 'white',
-                  borderRadius: '30px',
                   '&:hover': {
-                    backgroundColor: '#D43852',
+                    color: '#D43852', // Darker shade on hover
                   },
-                  textTransform: 'none',
+                  borderRadius: '0px', // Removed border radius
                 }}
-                disabled={!(tempPropertyName || '').trim()}
               >
-                Save
+                Edit
               </Button>
-            </Box>
-          </Box>
-        )}
-      </Box>
+            ) : (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                <TextField
+                  value={tempPropertyName}
+                  onChange={(e) => setTempPropertyName(e.target.value)}
+                  variant="outlined"
+                  size="small"
+                  label="Property Name"
+                  sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 'auto' } }}
+                />
+                <Button
+                  variant="contained"
+                  startIcon={<SaveIcon />}
+                  onClick={handleSavePropertyName}
+                  sx={{
+                    backgroundColor: '#F43F5E',
+                    color: 'white',
+                    borderRadius: '0px', // Removed border radius
+                    textTransform: 'none',
+                    '&:hover': {
+                      backgroundColor: '#D43852',
+                    },
+                  }}
+                  disabled={!(tempPropertyName || '').trim()}
+                >
+                  Save
+                </Button>
+                <Button
+                  variant="text"
+                  startIcon={<CancelIcon />}
+                  onClick={handleCancelEditPropertyName}
+                  sx={{
+                    color: '#F43F5E',
+                    textTransform: 'none',
+                    '&:hover': {
+                      color: '#D43852',
+                    },
+                    borderRadius: '0px', // Removed border radius
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            )}
+          </Grid>
+        </Grid>
+      </Paper>
 
-      {/* Concierge Training Header */}
-      <Box
-        sx={{
-          width: '100%',
-          bgcolor: '#F43F5E',
-          padding: '15px',
-          textAlign: 'center',
-          color: 'white',
-          marginBottom: '20px',
-          borderRadius: '10px',
-        }}
-      >
-        <Typography
-          variant="h6"
-          sx={{
-            fontWeight: 600,
-            letterSpacing: '1px',
-          }}
-        >
-          CONCIERGE TRAINING
-        </Typography>
-      </Box>
 
-      {/* Progress Bar */}
-      <LinearProgress
-        variant="determinate"
-        value={progress}
-        sx={{ width: '100%', maxWidth: '600px', marginBottom: '20px', borderRadius: '10px' }}
-      />
 
       {/* Main Content Section */}
-      <Box sx={{ width: '100%', maxWidth: '600px' }}>
-        {/* Removed conditional rendering to always show the form */}
+      <Paper
+        elevation={3}
+        sx={{
+          width: '90%',
+          maxWidth: '800px',
+          backgroundColor: 'white',
+          padding: { xs: '20px', sm: '30px' }, // Responsive padding
+          borderRadius: '0px', // Removed border radius
+          boxShadow: 3,
+          marginBottom: '30px',
+        }}
+      >
         <form onSubmit={handleSubmit}>
-          {/* Initial Host Information */}
-          <Typography variant="h6" sx={{ fontWeight: 500, marginBottom: '10px' }}>
-            What would you like your guests to know about their hosts?
-          </Typography>
-          <TextField
-            fullWidth
-            name="hostInfo"
-            value={formData.hostInfo}
-            onChange={(e) => setFormData({ ...formData, hostInfo: e.target.value })}
-            variant="outlined"
-            sx={{ marginBottom: '20px' }}
-            multiline
-            rows={4}
-            placeholder="Tell us about yourself as a host"
-          />
+          {/* Host Information Section */}
+          <Box sx={{ marginBottom: '30px' }}>
+            <Typography variant="h6" sx={{ fontWeight: 500, marginBottom: '10px', color: '#F43F5E' }}>
+              Host Information
+            </Typography>
+            {!editingFields.hostInfo ? (
+              <>
+                <Typography variant="body1" sx={{ marginBottom: '10px' }}>
+                  {formData.hostInfo || 'N/A'}
+                </Typography>
+                <Button
+                  variant="text"
+                  onClick={() => setEditingFields(prev => ({ ...prev, hostInfo: true }))}
+                  sx={{
+                    color: '#F43F5E', // Branding color
+                    textTransform: 'none',
+                    '&:hover': {
+                      color: '#D43852',
+                    },
+                    borderRadius: '0px', // Removed border radius
+                  }}
+                >
+                  Edit
+                </Button>
+              </>
+            ) : (
+              <Box>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  value={formData.hostInfo}
+                  onChange={(e) => handleChange('hostInfo', e.target.value)}
+                  variant="outlined"
+                  sx={{ marginBottom: '20px' }}
+                  placeholder="Tell us about yourself as a host"
+                />
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                  <Button
+                    variant="text"
+                    startIcon={<CancelIcon />}
+                    onClick={() => setEditingFields(prev => ({ ...prev, hostInfo: false }))}
+                    sx={{
+                      color: '#F43F5E',
+                      textTransform: 'none',
+                      '&:hover': {
+                        color: '#D43852',
+                      },
+                      borderRadius: '0px', // Removed border radius
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="contained"
+                    startIcon={<SaveIcon />}
+                    onClick={() => {
+                      setEditingFields(prev => ({ ...prev, hostInfo: false }));
+                      saveToLocalStorage();
+                    }}
+                    sx={{
+                      backgroundColor: '#F43F5E',
+                      color: 'white',
+                      borderRadius: '0px', // Removed border radius
+                      '&:hover': {
+                        backgroundColor: '#D43852',
+                      },
+                      textTransform: 'none',
+                    }}
+                  >
+                    Save
+                  </Button>
+                </Box>
+              </Box>
+            )}
+          </Box>
 
-          {/* Survey Questions */}
-          {questions.map((question, index) => (
-            <Box key={index} sx={{ marginBottom: '30px' }}>
-              <Typography variant="h6" sx={{ fontWeight: 500, marginBottom: '10px' }}>
-                {question.mainQuestion}
+          <Divider sx={{ marginY: '20px' }} />
+
+          {/* Dynamic Questions */}
+          {questions.map((question) => (
+            <Box key={question.id} sx={{ marginBottom: '30px' }}>
+              <Typography variant="h6" sx={{ fontWeight: 500, marginBottom: '10px', color: '#F43F5E' }}>
+                {question.question}
               </Typography>
-              <FormControl component="fieldset">
-                <ButtonGroup variant="contained" aria-label="yes-no button group" sx={{ mb: 2 }}>
-                  <Button
-                    onClick={() => setFormData({ ...formData, [question.field]: 'yes' })}
-                    sx={{
-                      bgcolor: formData[question.field] === 'yes' ? '#F43F5E' : 'grey.400',
-                      '&:hover': {
-                        bgcolor: formData[question.field] === 'yes' ? '#D43852' : 'grey.500',
-                      }
-                    }}
-                  >
-                    Yes
-                  </Button>
-                  <Button
-                    onClick={() => setFormData({ ...formData, [question.field]: 'no' })}
-                    sx={{
-                      bgcolor: formData[question.field] === 'no' ? '#F43F5E' : 'grey.400',
-                      '&:hover': {
-                        bgcolor: formData[question.field] === 'no' ? '#D43852' : 'grey.500',
-                      }
-                    }}
-                  >
-                    No
-                  </Button>
-                </ButtonGroup>
-              </FormControl>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData[question.label]}
+                    onChange={(e) => handleChange(question.label, e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label={formData[question.label] ? 'Yes' : 'No'}
+              />
 
-              <Collapse in={formData[question.field] === 'yes'}>
-                <Box sx={{ mt: 2 }}>
+              <Collapse in={formData[question.label]}>
+                <Box sx={{ mt: 2, paddingLeft: { xs: '10px', sm: '20px' } }}>
                   {question.followUp.map((followUpQ, fIndex) => (
                     <TextField
                       key={fIndex}
@@ -740,13 +627,11 @@ function Survey() {
                       name={followUpQ.field}
                       label={followUpQ.label}
                       value={formData[followUpQ.field]}
-                      onChange={(e) =>
-                        setFormData({ ...formData, [followUpQ.field]: e.target.value })
-                      }
+                      onChange={(e) => handleChange(followUpQ.field, e.target.value)}
                       variant="outlined"
                       multiline
                       rows={2}
-                      sx={{ marginBottom: 2 }}
+                      sx={{ marginBottom: 2, borderRadius: '0px' }} // Removed border radius if any
                     />
                   ))}
                 </Box>
@@ -754,19 +639,9 @@ function Survey() {
             </Box>
           ))}
 
-          {/* Concierge Style */}
-          <Typography variant="h6" sx={{ fontWeight: 500, marginBottom: '10px' }}>
-            What style would you like your Concierge to have? (i.e. Funny, Serious, Helpful, Professional, Casual)
-          </Typography>
-          <TextField
-            fullWidth
-            name="conciergeStyle"
-            value={formData.conciergeStyle}
-            onChange={(e) => setFormData({ ...formData, conciergeStyle: e.target.value })}
-            variant="outlined"
-            sx={{ marginBottom: '20px' }}
-            placeholder="Enter preferred style"
-          />
+          <Divider sx={{ marginY: '20px' }} />
+
+          
 
           {/* Submit Button */}
           <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '30px' }}>
@@ -777,22 +652,22 @@ function Survey() {
                 backgroundColor: '#F43F5E',
                 color: 'white',
                 padding: '12px 40px',
-                borderRadius: '30px',
+                borderRadius: '0px', // Ensures no border radius
                 '&:hover': {
                   backgroundColor: '#D43852',
                 },
-                width: '100%',
+                width: { xs: '100%', sm: 'auto' },
                 maxWidth: '250px',
-                marginBottom: '50px',
                 textTransform: 'none',
+                fontSize: '16px',
               }}
             >
               Submit
             </Button>
           </Box>
         </form>
-      </Box>
-    </Box>
+      </Paper>
+    </Container>
   );
 }
 
