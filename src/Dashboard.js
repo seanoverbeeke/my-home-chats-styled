@@ -1,12 +1,28 @@
 // src/Dashboard.js
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Grid, Card, CardContent, IconButton, TextField, Collapse } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  IconButton,
+  TextField,
+  Fade,
+  Stack,
+  GlobalStyles,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from '@mui/material';
 import { Link } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
 function Dashboard() {
-  // Initialize state with a try-catch to handle potential JSON parsing errors
   const [properties, setProperties] = useState(() => {
     try {
       const savedProperties = localStorage.getItem('properties');
@@ -19,8 +35,9 @@ function Dashboard() {
 
   const [newPropertyName, setNewPropertyName] = useState('');
   const [showNewPropertyField, setShowNewPropertyField] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [propertyToDelete, setPropertyToDelete] = useState(null);
 
-  // Save properties to localStorage whenever properties change
   useEffect(() => {
     try {
       localStorage.setItem('properties', JSON.stringify(properties));
@@ -68,123 +85,319 @@ function Dashboard() {
         nearestHospital: '',
         hasLocalAttractions: 'no',
         attractionsDetails: '',
-        conciergeStyle: ''
-      }
+        conciergeStyle: '',
+      },
     };
 
-    // Update state with the new property
-    setProperties(prevProperties => [...prevProperties, newProperty]);
-
-    // Reset form
+    setProperties((prevProperties) => [...prevProperties, newProperty]);
     setNewPropertyName('');
     setShowNewPropertyField(false);
   };
 
   const handleDeleteProperty = (id) => {
-    const updatedProperties = properties.filter((property) => property.id !== id);
+    const updatedProperties = properties.filter(
+      (property) => property.id !== id
+    );
     setProperties(updatedProperties);
+    setDeleteDialogOpen(false);
+    setPropertyToDelete(null);
+  };
+
+  const openDeleteDialog = (property) => {
+    setPropertyToDelete(property);
+    setDeleteDialogOpen(true);
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setPropertyToDelete(null);
   };
 
   return (
-    <Box sx={{ flexGrow: 1, padding: { xs: '10px', sm: '20px' }, backgroundColor: '#f5f5f5', display: 'flex', flexDirection: 'column' }}>
-      <Typography variant="h5" sx={{ marginBottom: '20px', fontWeight: 600, textAlign: 'center' }}>
-        MyHomeChat Properties
-      </Typography>
+    <>
+      {/* Global Styles for Scrollbar and Smooth Scrolling */}
+      <GlobalStyles
+        styles={{
+          html: {
+            scrollBehavior: 'smooth',
+          },
+          /* Hide scrollbar for Chrome, Safari and Opera */
+          '*::-webkit-scrollbar': {
+            display: 'none',
+          },
+          /* Hide scrollbar for IE, Edge and Firefox */
+          '*': {
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          },
+        }}
+      />
 
-      <Grid container spacing={3} justifyContent="center">
-        {properties.map((property) => (
-          <Grid item xs={12} sm={6} md={4} key={property.id}>
-            <Card sx={{ borderRadius: '10px', boxShadow: 3, position: 'relative' }}>
-              <IconButton
-                onClick={() => handleDeleteProperty(property.id)}
-                sx={{
-                  position: 'absolute',
-                  top: 10,
-                  right: 10,
-                  color: '#F43F5E',
-                }}
-                aria-label={`delete ${property.name}`}
-              >
-                <DeleteIcon />
-              </IconButton>
+      <Box
+        sx={{
+          flexGrow: 1,
+          padding: { xs: '16px', sm: '32px' },
+          background: 'linear-gradient(135deg, #F43F5E 30%, #D7344A 90%)',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
+        }}
+      >
+        {/* Header */}
+        <Box
+          sx={{
+            marginBottom: '32px',
+            flexShrink: 0,
+          }}
+        >
+          <Typography
+            variant="h5" // Changed from h4 to h5 for smaller size
+            sx={{
+              fontWeight: 700,
+              textAlign: 'center',
+              color: 'white',
+              textTransform: 'uppercase',
+              letterSpacing: '2px',
+              fontFamily: 'Roboto, sans-serif',
+              whiteSpace: 'nowrap', // Prevents text from wrapping to multiple lines
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }, // Responsive font sizes
+            }}
+          >
+            Property Manager
+          </Typography>
+        </Box>
 
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  {property.name}
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#888', marginBottom: '10px' }}>
-                  Status: {property.status}
-                </Typography>
-                <Link to={`/survey/${property.id}`} style={{ textDecoration: 'none' }}>
-                  <Button
-                    variant="contained"
+        {/* Properties Grid */}
+        <Box
+          sx={{
+            flexGrow: 1,
+            overflowY: 'auto',
+            paddingRight: '4px',
+            paddingTop: '15px',
+          }}
+        >
+          <Grid container spacing={4} justifyContent="center">
+            {properties.map((property) => (
+              <Grid item xs={12} sm={6} md={4} key={property.id}>
+                <Card
+                  sx={{
+                    borderRadius: '0px', // Removed borderRadius
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    position: 'relative',
+                    backgroundColor: '#ffffff',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-6px)',
+                      boxShadow: '0 12px 24px rgba(0,0,0,0.2)',
+                      zIndex: 2,
+                    },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
+                  }}
+                >
+                  {/* Delete Button */}
+                  <IconButton
+                    onClick={() => openDeleteDialog(property)}
                     sx={{
-                      backgroundColor: '#F43F5E',
-                      color: 'white',
-                      marginTop: '10px',
-                      borderRadius: '30px',
-                      width: '100%',
+                      position: 'absolute',
+                      top: 12,
+                      right: 12,
+                      color: '#F43F5E',
+                      backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 1)',
+                        color: '#D7344A',
+                      },
+                      borderRadius: 0, // Already removed borderRadius
+                    }}
+                    aria-label={`delete ${property.name}`}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+
+                  {/* Card Content */}
+                  <CardContent sx={{ flexGrow: 1, padding: '24px' }}>
+                    {/* Property Name */}
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 700,
+                        color: '#333',
+                        marginBottom: '1px',
+                      }}
+                    >
+                      {property.name}
+                    </Typography>
+
+                    {/* Subscription Status */}
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#888',
+                        fontWeight: 500,
+                        marginBottom: '10px',
+                      }}
+                    >
+                      Subscription: {property.status}
+                    </Typography>
+
+                    {/* Settings Button */}
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <Link to={`/survey/${property.id}`} style={{ textDecoration: 'none' }}>
+                        <Button
+                          variant="contained"
+                          sx={{
+                            backgroundColor: '#F43F5E',
+                            color: 'white',
+                            paddingX: '20px',
+                            paddingY: '8px',
+                            fontSize: '0.875rem',
+                            borderRadius: 0, // Removed borderRadius
+                            transition: 'background-color 0.3s',
+                            '&:hover': {
+                              backgroundColor: '#D7344A',
+                            },
+                          }}
+                        >
+                          Settings
+                        </Button>
+                      </Link>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+
+            {/* Add Property Section */}
+            <Grid item xs={12} sm={6} md={4}>
+              {!showNewPropertyField ? (
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowNewPropertyField(true)}
+                  startIcon={<AddIcon />}
+                  sx={{
+                    borderRadius: '0px', // Removed borderRadius
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    backgroundColor: '#ffffff',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-6px)',
+                      boxShadow: '0 12px 24px rgba(0,0,0,0.2)',
+                      zIndex: 2,
+                    },
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingY: '12px',
+                    textTransform: 'none',
+                    color: '#F43F5E',
+                    borderColor: '#F43F5E',
+                  }}
+                >
+                  Add Property
+                </Button>
+              ) : (
+                <Fade in={showNewPropertyField} timeout={500}>
+                  <Card
+                    sx={{
+                      borderRadius: '0px', // Removed borderRadius
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                      backgroundColor: '#ffffff',
+                      transition: 'transform 0.3s, box-shadow 0.3s',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: '100%',
+                      padding: '20px',
                     }}
                   >
-                    Settings
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+                    <Stack spacing={2}>
+                      <TextField
+                        fullWidth
+                        value={newPropertyName}
+                        onChange={(e) => setNewPropertyName(e.target.value)}
+                        placeholder="Enter property name"
+                        variant="outlined"
+                      />
+                      <Stack direction="row" spacing={2}>
+                        {/* Cancel Button */}
+                        <Button
+                          onClick={() => {
+                            setShowNewPropertyField(false);
+                            setNewPropertyName('');
+                          }}
+                          variant="outlined"
+                          sx={{
+                            borderRadius: 0, // Removed borderRadius
+                            width: '100%',
+                            paddingY: '12px',
+                            color: '#F43F5E',
+                            borderColor: '#F43F5E',
+                            transition: 'background-color 0.3s, color 0.3s',
+                            '&:hover': {
+                              backgroundColor: 'rgba(244, 63, 94, 0.1)',
+                              color: '#D7344A',
+                              borderColor: '#D7344A',
+                            },
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        {/* Save Button */}
+                        <Button
+                          onClick={handleAddProperty}
+                          variant="contained"
+                          sx={{
+                            backgroundColor: '#F43F5E',
+                            color: 'white',
+                            borderRadius: 0, // Removed borderRadius
+                            width: '100%',
+                            paddingY: '12px',
+                            transition: 'background-color 0.3s',
+                            '&:hover': {
+                              backgroundColor: '#D7344A',
+                            },
+                          }}
+                          disabled={!newPropertyName.trim()}
+                        >
+                          Save
+                        </Button>
+                      </Stack>
+                    </Stack>
+                  </Card>
+                </Fade>
+              )}
+            </Grid>
           </Grid>
-        ))}
-      </Grid>
+        </Box>
 
-      <Grid container spacing={3} sx={{ marginTop: '30px', justifyContent: 'center' }}>
-        <Grid item xs={12} sm={6} md={4}>
-          <Card sx={{ borderRadius: '10px', boxShadow: 3 }}>
-            <CardContent>
-              <Button
-                variant="outlined"
-                onClick={() => setShowNewPropertyField(!showNewPropertyField)}
-                sx={{
-                  color: '#F43F5E',
-                  borderColor: '#F43F5E',
-                  width: '100%',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderRadius: '30px',
-                }}
-                startIcon={<AddIcon />}
-              >
-                Add Property
-              </Button>
-
-              <Collapse in={showNewPropertyField}>
-                <TextField
-                  fullWidth
-                  value={newPropertyName}
-                  onChange={(e) => setNewPropertyName(e.target.value)}
-                  placeholder="Enter property name"
-                  variant="outlined"
-                  sx={{ marginTop: '20px' }}
-                />
-                <Button
-                  onClick={handleAddProperty}
-                  variant="contained"
-                  sx={{
-                    backgroundColor: '#F43F5E',
-                    color: 'white',
-                    marginTop: '20px',
-                    borderRadius: '30px',
-                    width: '100%',
-                  }}
-                  disabled={!newPropertyName.trim()}
-                >
-                  Save
-                </Button>
-              </Collapse>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={closeDeleteDialog}
+          aria-labelledby="delete-dialog-title"
+          aria-describedby="delete-dialog-description"
+        >
+          <DialogTitle id="delete-dialog-title">Delete Property</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="delete-dialog-description">
+              Are you sure you want to delete the property "{propertyToDelete?.name}"? This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeDeleteDialog} color="primary" sx={{ borderRadius: 0 }}>
+              Cancel
+            </Button>
+            <Button onClick={() => handleDeleteProperty(propertyToDelete.id)} color="error" autoFocus sx={{ borderRadius: 0 }}>
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </>
   );
 }
 
