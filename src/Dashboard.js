@@ -17,7 +17,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  TextField, // Added TextField import
+  TextField,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -96,9 +96,14 @@ function Dashboard() {
     setShowNewPropertyField(false);
   };
 
-  const handleDeleteProperty = (id) => {
+  const handleDeleteProperty = () => {
+    if (!propertyToDelete) {
+      console.error('No property selected for deletion.');
+      return;
+    }
+
     const updatedProperties = properties.filter(
-      (property) => property.id !== id
+      (property) => property.id !== propertyToDelete.id
     );
     setProperties(updatedProperties);
     setDeleteDialogOpen(false);
@@ -135,26 +140,26 @@ function Dashboard() {
         }}
       />
 
-<Paper
-  elevation={3}
-  sx={{
-    backgroundColor: '#F43F5E',
-    color: '#fff',
-    padding: 2,
-    borderRadius: 0,
-    width: '100%',
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center', // Changed from 'space-between' to 'center'
-    marginBottom: 4,
-  }}
->
-  <Typography variant="h6" sx={{ fontWeight: 500 }}>
-    Property Manager 
-  </Typography>
-  {/* Add more Navbar items here if needed */}
-</Paper>
+      <Paper
+        elevation={3}
+        sx={{
+          backgroundColor: '#F43F5E',
+          color: '#fff',
+          padding: 2,
+          borderRadius: 0,
+          width: '100%',
+          boxSizing: 'border-box',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center', // Changed from 'space-between' to 'center'
+          marginBottom: 4,
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 500 }}>
+          Property Manager
+        </Typography>
+        {/* Add more Navbar items here if needed */}
+      </Paper>
 
       <Box
         sx={{
@@ -165,8 +170,6 @@ function Dashboard() {
           minHeight: '100vh',
         }}
       >
-        
-
         {/* Properties Grid */}
         <Box
           sx={{
@@ -177,6 +180,26 @@ function Dashboard() {
           }}
         >
           <Grid container spacing={4} justifyContent="center">
+            {properties.length === 0 && (
+              <Grid item xs={12}>
+                <Box
+                  sx={{
+                    textAlign: 'center',
+                    padding: '40px 20px',
+                    backgroundColor: '#f9f9f9',
+                    borderRadius: '8px',
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    No Properties Added Yet
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    Add a property to begin creating your very first AI powered Concierge!
+                  </Typography>
+                </Box>
+              </Grid>
+            )}
+
             {properties.map((property) => (
               <Grid item xs={12} sm={6} md={4} key={property.id}>
                 <Card
@@ -389,7 +412,13 @@ function Dashboard() {
             <Button onClick={closeDeleteDialog} color="primary" sx={{ borderRadius: 0 }}>
               Cancel
             </Button>
-            <Button onClick={() => handleDeleteProperty(propertyToDelete.id)} color="error" autoFocus sx={{ borderRadius: 0 }}>
+            <Button
+              onClick={handleDeleteProperty}
+              color="error"
+              autoFocus
+              sx={{ borderRadius: 0 }}
+              disabled={!propertyToDelete} // Disable if propertyToDelete is null
+            >
               Delete
             </Button>
           </DialogActions>

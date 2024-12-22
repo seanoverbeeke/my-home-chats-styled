@@ -1,47 +1,42 @@
-// src/Onboarding.js
+// src/Activate.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
   Card,
-  CardHeader,
   CardContent,
   Button,
-  Collapse,
   Grid,
   Paper,
   GlobalStyles,
-  Snackbar,      // Import Snackbar
-  Alert,         // Import Alert for better styling
-  IconButton,    // Import IconButton for close action
+  Snackbar,
+  Alert,
+  IconButton,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close'; // Import Close Icon
+import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import PropertyProfile from './Propertyprofile';
-import Survey from './Survey';
-import PropertyGallery from './Propertygallery';
 import { styled } from '@mui/material/styles';
 
-// Styled Button for Setup
-const SetupButton = styled(Button)(({ theme }) => ({
+// Styled Button for Subscribe
+const SubscribeButton = styled(Button)(({ theme }) => ({
   backgroundColor: '#F43F5E', // Branding Primary Color
   color: '#fff',
   textTransform: 'none',
-  fontSize: '14px',
+  fontSize: '16px',
   '&:hover': {
     backgroundColor: '#D43852', // Darker shade for hover
   },
   borderRadius: '0px',
+  padding: '12px 24px',
 }));
 
-const Onboarding = () => {
+const Activate = () => {
   const { propertyId } = useParams();
   const navigate = useNavigate();
-  const [expandedSection, setExpandedSection] = useState(null);
   const [propertyName, setPropertyName] = useState('');
 
-  // Snackbar state
+  // Snackbar state for activation message
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   useEffect(() => {
@@ -60,33 +55,16 @@ const Onboarding = () => {
     }
 
     // Trigger Snackbar when component mounts
-    const hasSeenSnackbar = localStorage.getItem(`hasSeenSnackbar_${propertyId}`);
+    const hasSeenSnackbar = localStorage.getItem(`hasSeenActivateSnackbar_${propertyId}`);
     if (!hasSeenSnackbar) {
       setSnackbarOpen(true);
-      localStorage.setItem(`hasSeenSnackbar_${propertyId}`, 'true');
+      localStorage.setItem(`hasSeenActivateSnackbar_${propertyId}`, 'true');
     }
   }, [propertyId]);
-
-  const handleExpandClick = (section) => {
-    setExpandedSection(expandedSection === section ? null : section);
-  };
 
   // Navigate back to the dashboard
   const handleBackToDashboard = () => {
     navigate('/dashboard'); // Adjust the path if your dashboard route is different
-  };
-
-  // Callback function to collapse the Concierge Training section
-  const handleSurveyClose = () => {
-    setExpandedSection(null);
-  };
-
-  // Callback function to update propertyName and collapse the Property Profile section
-  const handlePropertyNameChange = (newName) => {
-    if (newName) {
-      setPropertyName(newName);
-    }
-    setExpandedSection(null);
   };
 
   // Handle Snackbar close
@@ -97,9 +75,10 @@ const Onboarding = () => {
     setSnackbarOpen(false);
   };
 
-  // Handle Activate button click
-  const handleActivate = () => {
-    navigate(`/activate/${propertyId}`);
+  // Handle Subscribe button click
+  const handleSubscribe = () => {
+    // Navigate to Stripe payment portal or handle subscription logic here
+    navigate('/payment'); // Adjust the path as needed
   };
 
   return (
@@ -204,72 +183,7 @@ const Onboarding = () => {
             }}
           >
             <Grid container spacing={3} sx={{ maxWidth: '1200px', width: '100%' }}>
-              {/* Property Profile Card */}
-              <Grid item xs={12} md={6}>
-                <Card
-                  sx={{
-                    borderRadius: '0px',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                    transition: 'transform 0.3s, box-shadow 0.3s',
-                    '&:hover': {
-                      transform: 'translateY(-6px)',
-                      boxShadow: '0 12px 24px rgba(0,0,0,0.2)',
-                      zIndex: 2,
-                    },
-                  }}
-                >
-                  <CardHeader
-                    title="Property Name"
-                    titleTypographyProps={{ variant: 'h6', fontWeight: 500, fontSize: '18px' }}
-                    action={
-                      <SetupButton onClick={() => handleExpandClick('profile')}>
-                        {expandedSection === 'profile' ? 'Close' : 'Setup'}
-                      </SetupButton>
-                    }
-                  />
-                  <Collapse in={expandedSection === 'profile'} timeout="auto" unmountOnExit>
-                    <CardContent>
-                      <PropertyProfile 
-                        propertyId={propertyId} 
-                        onPropertyNameChange={handlePropertyNameChange} 
-                      />
-                    </CardContent>
-                  </Collapse>
-                </Card>
-              </Grid>
-
-              {/* Concierge Training Card */}
-              <Grid item xs={12} md={6}>
-                <Card
-                  sx={{
-                    borderRadius: '0px',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                    transition: 'transform 0.3s, box-shadow 0.3s',
-                    '&:hover': {
-                      transform: 'translateY(-6px)',
-                      boxShadow: '0 12px 24px rgba(0,0,0,0.2)',
-                      zIndex: 2,
-                    },
-                  }}
-                >
-                  <CardHeader
-                    title="Concierge Training"
-                    titleTypographyProps={{ variant: 'h6', fontWeight: 500, fontSize: '18px' }}
-                    action={
-                      <SetupButton onClick={() => handleExpandClick('concierge')}>
-                        {expandedSection === 'concierge' ? 'Close' : 'Setup'}
-                      </SetupButton>
-                    }
-                  />
-                  <Collapse in={expandedSection === 'concierge'} timeout="auto" unmountOnExit>
-                    <CardContent>
-                      <Survey propertyId={propertyId} onClose={handleSurveyClose} />
-                    </CardContent>
-                  </Collapse>
-                </Card>
-              </Grid>
-
-              {/* Property Gallery Card */}
+              {/* Activation Card */}
               <Grid item xs={12}>
                 <Card
                   sx={{
@@ -283,51 +197,102 @@ const Onboarding = () => {
                     },
                   }}
                 >
-                  <CardHeader
-                    title="Property Gallery"
-                    titleTypographyProps={{ variant: 'h6', fontWeight: 500, fontSize: '18px' }}
-                    action={
-                      <SetupButton onClick={() => handleExpandClick('gallery')}>
-                        {expandedSection === 'gallery' ? 'Close' : 'Setup'}
-                      </SetupButton>
-                    }
-                  />
-                  <Collapse in={expandedSection === 'gallery'} timeout="auto" unmountOnExit>
-                    <CardContent>
-                      <PropertyGallery propertyId={propertyId} />
-                    </CardContent>
-                  </Collapse>
+                  <CardContent>
+                    <Typography variant="h5" sx={{ fontWeight: 600, marginBottom: '20px' }}>
+                      You're Almost There!
+                    </Typography>
+                    <Typography variant="body1" sx={{ marginBottom: '20px' }}>
+                      Unlock the full potential of your property management with our premium features. For just{' '}
+                      <strong>$11.99/month per property</strong>, gain access to:
+                    </Typography>
+
+                    <Grid container spacing={2}>
+                      {/* Feature 1 */}
+                      <Grid item xs={12} sm={6}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Box
+                            sx={{
+                              width: '10px',
+                              height: '10px',
+                              backgroundColor: '#F43F5E',
+                              borderRadius: '50%',
+                              marginRight: '10px',
+                            }}
+                          ></Box>
+                          <Typography variant="body1">24/7 Tech Support</Typography>
+                        </Box>
+                      </Grid>
+
+                      {/* Feature 2 */}
+                      <Grid item xs={12} sm={6}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Box
+                            sx={{
+                              width: '10px',
+                              height: '10px',
+                              backgroundColor: '#F43F5E',
+                              borderRadius: '50%',
+                              marginRight: '10px',
+                            }}
+                          ></Box>
+                          <Typography variant="body1">Cancel Anytime</Typography>
+                        </Box>
+                      </Grid>
+
+                      {/* Feature 3 */}
+                      <Grid item xs={12} sm={6}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Box
+                            sx={{
+                              width: '10px',
+                              height: '10px',
+                              backgroundColor: '#F43F5E',
+                              borderRadius: '50%',
+                              marginRight: '10px',
+                            }}
+                          ></Box>
+                          <Typography variant="body1">
+                            Friendly AI Concierge for Guest Support
+                          </Typography>
+                        </Box>
+                      </Grid>
+
+                      {/* Feature 4 */}
+                      <Grid item xs={12} sm={6}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Box
+                            sx={{
+                              width: '10px',
+                              height: '10px',
+                              backgroundColor: '#F43F5E',
+                              borderRadius: '50%',
+                              marginRight: '10px',
+                            }}
+                          ></Box>
+                          <Typography variant="body1">Instant Guest Communication</Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
+
+                    <Typography variant="body1" sx={{ marginTop: '20px' }}>
+                      Experience seamless property management and elevate your guests' stay with our intelligent solutions.
+                    </Typography>
+
+                    {/* Subscribe Button */}
+                    <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
+                      <SubscribeButton onClick={handleSubscribe}>
+                        SUBSCRIBE
+                      </SubscribeButton>
+                    </Box>
+                  </CardContent>
                 </Card>
               </Grid>
             </Grid>
           </Box>
-
-          {/* Activate Button */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              marginTop: '40px',
-              paddingX: { xs: 2, sm: 4 },
-            }}
-          >
-            <SetupButton
-              onClick={handleActivate}
-              sx={{
-                fontSize: '16px',
-                paddingX: '24px',
-                paddingY: '12px',
-                width: { xs: '100%', sm: 'auto' },
-                maxWidth: '300px',
-              }}
-            >
-              Activate
-            </SetupButton>
-          </Box>
         </Box>
       </Box>
 
-      {/* Customized Centered Setup Snackbar */}
+      {/* Customized Centered Activation Snackbar */}
       <Snackbar
         open={snackbarOpen}
         onClose={handleSnackbarClose}
@@ -346,7 +311,7 @@ const Onboarding = () => {
       >
         <Alert 
           onClose={handleSnackbarClose} 
-          severity="info" 
+          severity="success" 
           sx={{ 
             width: '100%', 
             borderRadius: '0px',
@@ -365,10 +330,10 @@ const Onboarding = () => {
           }
         >
           <Typography variant="h6" gutterBottom>
-            Welcome to Property Setup!
+            Ready to Elevate Your Property?
           </Typography>
           <Typography variant="body1">
-            This is where you will set up your property. The Concierge Training is a chance for you to let the AI chatbot know everything about your property. It's important that you provide as accurate information as possible so it can represent your property to your guests effectively. Think of this as training an employee—the more information you provide, the better they will do their job.
+            Subscribe now and start offering your guests unparalleled support with our AI Concierge. Enjoy peace of mind with 24/7 tech support and the flexibility to cancel anytime.
           </Typography>
         </Alert>
       </Snackbar>
@@ -376,4 +341,4 @@ const Onboarding = () => {
   );
 };
 
-export default Onboarding;
+export default Activate;

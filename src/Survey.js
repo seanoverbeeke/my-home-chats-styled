@@ -11,14 +11,11 @@ import {
   Switch,
   Divider,
   Slider,
-  Grid,
   Paper,
-  LinearProgress,
   Container,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PropTypes from 'prop-types';
 
 function Survey({ propertyId, onClose }) {
@@ -26,6 +23,7 @@ function Survey({ propertyId, onClose }) {
 
   // Define all boolean fields to ensure they are always present
   const booleanFields = [
+    'hostinfo',
     'wifi',
     'hasTowels',
     'hasExtraSheets',
@@ -42,7 +40,8 @@ function Survey({ propertyId, onClose }) {
 
   // Initialize formData with all boolean fields set to false and other fields as empty strings
   const initialFormData = {
-    hostInfo: '',
+    hostinfo: false,
+    hostdescribe: '',
     wifi: false,
     wifiName: '',
     wifiPassword: '',
@@ -72,7 +71,6 @@ function Survey({ propertyId, onClose }) {
     nearestHospital: '',
     hasLocalAttractions: false,
     attractionsDetails: '',
-    conciergeStyle: 0 // Initialize as number (0: Casual, 100: Professional)
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -207,7 +205,7 @@ function Survey({ propertyId, onClose }) {
 
   const handleCancelEditPropertyName = () => {
     setEditingFields(prev => ({ ...prev, propertyName: false }));
-    // Optionally, reset propertyName if needed
+    setPropertyName(initialFormDataState.propertyName);
   };
 
   const handleSavePropertyName = () => {
@@ -278,24 +276,16 @@ function Survey({ propertyId, onClose }) {
     return 'Neutral';
   };
 
-  // Slider marks
-  const sliderMarks = [
-    {
-      value: 0,
-      label: 'Casual',
-    },
-    {
-      value: 50,
-      label: 'Neutral',
-    },
-    {
-      value: 100,
-      label: 'Professional',
-    },
-  ];
+
 
   // Questions configuration
   const questions = [
+    {
+      id: 'hostinfo',
+      label: 'hostinfo',
+      question: 'Do you want your guests to know more about their hosts?',
+      followUp: [{ label: 'What do you want them to know?', field: 'hostdescribe' }]
+    },
     {
       id: 'wifi',
       label: 'wifi',
@@ -308,71 +298,71 @@ function Survey({ propertyId, onClose }) {
     {
       id: 'hasTowels',
       label: 'hasTowels',
-      question: 'Are there towels available for guests?',
-      followUp: [{ label: 'Where are the towels located?', field: 'towelsLocation' }]
+      question: 'Do your guests have access to fresh towels?',
+      followUp: [{ label: 'Where can guests find the towels?', field: 'towelsLocation' }]
     },
     {
       id: 'hasExtraSheets',
       label: 'hasExtraSheets',
-      question: 'Are there extra bed sheets available?',
-      followUp: [{ label: 'Where are the extra sheets located?', field: 'sheetsLocation' }]
+      question: 'Do you provide extra bed sheets for your guests?',
+      followUp: [{ label: 'Where are the extra sheets stored?', field: 'sheetsLocation' }]
     },
     {
       id: 'hasCoffeeMachine',
       label: 'hasCoffeeMachine',
-      question: 'Is there a coffee machine?',
+      question: 'Is there a coffee machine available for guests?',
       followUp: [{ label: 'Where is the coffee machine located?', field: 'coffeeMachineLocation' }]
     },
     {
       id: 'hasPullOutSofa',
       label: 'hasPullOutSofa',
-      question: 'Are there any pull-out sofas?',
-      followUp: [{ label: 'Please describe the pull-out sofa locations and instructions', field: 'sofaDetails' }]
+      question: 'Do you have any pull-out sofas?',
+      followUp: [{ label: 'Please describe the pull-out sofa locations and usage instructions', field: 'sofaDetails' }]
     },
     {
       id: 'hasLocalFood',
       label: 'hasLocalFood',
-      question: 'Would you like to share local food recommendations?',
+      question: 'Would you like to share local food recommendations with your guests?',
       followUp: [
-        { label: 'Recommended breakfast spots', field: 'breakfastSpots' },
-        { label: 'Recommended lunch spots', field: 'lunchSpots' },
-        { label: 'Recommended dinner spots', field: 'dinnerSpots' }
+        { label: 'Favorite breakfast spots', field: 'breakfastSpots' },
+        { label: 'Top lunch spots', field: 'lunchSpots' },
+        { label: 'Best dinner places', field: 'dinnerSpots' }
       ]
     },
     {
       id: 'hasThermostat',
       label: 'hasThermostat',
-      question: 'Is there a thermostat?',
-      followUp: [{ label: 'Where is the thermostat located and are there any special instructions?', field: 'thermostatLocation' }]
+      question: 'Is there a thermostat available for guests to adjust the temperature?',
+      followUp: [{ label: 'Where is the thermostat located and any special instructions?', field: 'thermostatLocation' }]
     },
     {
       id: 'hasTransportation',
       label: 'hasTransportation',
-      question: 'Are there local transportation options?',
-      followUp: [{ label: 'Please describe the transportation options', field: 'transportationDetails' }]
+      question: 'Are there convenient local transportation options for your guests?',
+      followUp: [{ label: 'Please describe the available transportation options', field: 'transportationDetails' }]
     },
     {
       id: 'hasAppliances',
       label: 'hasAppliances',
-      question: 'Are there any special appliance instructions?',
+      question: 'Are there any special instructions for using the appliances in your property?',
       followUp: [{ label: 'Please provide details about appliance usage', field: 'applianceDetails' }]
     },
     {
       id: 'hasCheckoutProcedures',
       label: 'hasCheckoutProcedures',
-      question: 'Are there specific checkout procedures?',
+      question: 'Do you have specific checkout procedures for your guests?',
       followUp: [{ label: 'Please describe the checkout procedures', field: 'checkoutDetails' }]
     },
     {
       id: 'hasFirstAid',
       label: 'hasFirstAid',
-      question: 'Is there a first aid kit?',
+      question: 'Is there a first aid kit available for your guests?',
       followUp: [{ label: 'Where is the first aid kit located?', field: 'firstAidLocation' }]
     },
     {
       id: 'hasLocalAttractions',
       label: 'hasLocalAttractions',
-      question: 'Are there local attractions or activities you want to recommend?',
+      question: 'Are there any local attractions or activities you’d like to recommend to your guests?',
       followUp: [{ label: 'Please describe the local attractions and activities', field: 'attractionsDetails' }]
     }
   ];
@@ -388,94 +378,8 @@ function Survey({ propertyId, onClose }) {
         fontFamily: 'Inter, sans-serif',
       }}
     >
-
-      {/* Host Information Section */}
-      <Paper
-        elevation={3}
-        sx={{
-          width: '100%',
-          maxWidth: '800px',
-          backgroundColor: 'white',
-          padding: { xs: '15px 20px', sm: '20px 30px' },
-          borderRadius: '0px',
-          boxShadow: 3,
-          marginBottom: '30px',
-        }}
-      >
+      <Paper elevation={3} sx={{ width: '100%', padding: { xs: '15px', sm: '30px' } }}>
         <form onSubmit={handleSubmit}>
-          {/* Host Information Section */}
-          <Box sx={{ marginBottom: '30px' }}>
-            <Typography variant="h6" sx={{ fontWeight: 500, marginBottom: '10px', color: '#F43F5E' }}>
-              Host Information
-            </Typography>
-            {!editingFields.hostInfo ? (
-              <>
-                <Typography variant="body1" sx={{ marginBottom: '10px' }}>
-                  {formData.hostInfo || 'N/A'}
-                </Typography>
-                <Button
-                  variant="outlined"
-                  onClick={() => setEditingFields(prev => ({ ...prev, hostInfo: true }))}
-                  sx={{
-                    color: '#F43F5E',
-                    borderColor: '#F43F5E',
-                    textTransform: 'none',
-                  }}
-                >
-                  Edit
-                </Button>
-              </>
-            ) : (
-              <Box>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  value={formData.hostInfo}
-                  onChange={(e) => handleChange('hostInfo', e.target.value)}
-                  variant="outlined"
-                  sx={{ marginBottom: '20px', borderRadius: '0px' }}
-                  placeholder="Tell us about yourself as a host"
-                />
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<CancelIcon />}
-                    onClick={() => setEditingFields(prev => ({ ...prev, hostInfo: false }))}
-                    sx={{
-                      color: '#F43F5E',
-                      borderColor: '#F43F5E',
-                      textTransform: 'none',
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="contained"
-                    startIcon={<SaveIcon />}
-                    onClick={() => {
-                      setEditingFields(prev => ({ ...prev, hostInfo: false }));
-                      saveToLocalStorage();
-                      // Optionally, you can collapse the section here if needed
-                    }}
-                    sx={{
-                      backgroundColor: '#F43F5E',
-                      color: 'white',
-                      textTransform: 'none',
-                      '&:hover': {
-                        backgroundColor: '#D43852',
-                      },
-                    }}
-                  >
-                    Save
-                  </Button>
-                </Box>
-              </Box>
-            )}
-          </Box>
-
-          <Divider sx={{ marginY: '20px' }} />
-
           {/* Dynamic Questions */}
           {questions.map((question) => (
             <Box key={question.id} sx={{ marginBottom: '30px' }}>
@@ -516,7 +420,27 @@ function Survey({ propertyId, onClose }) {
                       variant="outlined"
                       multiline
                       rows={2}
-                      sx={{ marginBottom: 2, borderRadius: '0px' }}
+                      sx={{
+                        marginBottom: 2,
+                        borderRadius: '0px',
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
+                            borderColor: '#F43F5E',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#D43852',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#F43F5E',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: '#F43F5E',
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': {
+                          color: '#F43F5E',
+                        },
+                      }}
                     />
                   ))}
                 </Box>
@@ -524,8 +448,6 @@ function Survey({ propertyId, onClose }) {
             </Box>
           ))}
 
-       
-       
           <Divider sx={{ marginY: '20px' }} />
 
           {/* Save and Cancel Buttons */}
