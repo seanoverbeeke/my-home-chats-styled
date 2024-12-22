@@ -6,9 +6,9 @@ import {
   Button,
   Grid,
   Card,
+  Paper,
   CardContent,
   IconButton,
-  TextField,
   Fade,
   Stack,
   GlobalStyles,
@@ -17,6 +17,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  TextField, // Added TextField import
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -56,37 +57,38 @@ function Dashboard() {
       bio: '',
       surveyData: {
         hostInfo: '',
-        wifi: 'no',
+        wifi: false,
         wifiName: '',
         wifiPassword: '',
-        hasTowels: 'no',
+        hasTowels: false,
         towelsLocation: '',
-        hasExtraSheets: 'no',
+        hasExtraSheets: false,
         sheetsLocation: '',
-        hasCoffeeMachine: 'no',
+        hasCoffeeMachine: false,
         coffeeMachineLocation: '',
-        hasPullOutSofa: 'no',
+        hasPullOutSofa: false,
         sofaDetails: '',
-        hasLocalFood: 'no',
+        hasLocalFood: false,
         breakfastSpots: '',
         lunchSpots: '',
         dinnerSpots: '',
-        hasThermostat: 'no',
+        hasThermostat: false,
         thermostatLocation: '',
-        hasTransportation: 'no',
+        hasTransportation: false,
         transportationDetails: '',
-        hasAppliances: 'no',
+        hasAppliances: false,
         applianceDetails: '',
-        hasCheckoutProcedures: 'no',
+        hasCheckoutProcedures: false,
         checkoutDetails: '',
         emergencyContact: '',
-        hasFirstAid: 'no',
+        hasFirstAid: false,
         firstAidLocation: '',
         nearestHospital: '',
-        hasLocalAttractions: 'no',
+        hasLocalAttractions: false,
         attractionsDetails: '',
-        conciergeStyle: '',
+        conciergeStyle: 0,
       },
+      galleryData: [],
     };
 
     setProperties((prevProperties) => [...prevProperties, newProperty]);
@@ -133,41 +135,37 @@ function Dashboard() {
         }}
       />
 
+<Paper
+  elevation={3}
+  sx={{
+    backgroundColor: '#F43F5E',
+    color: '#fff',
+    padding: 2,
+    borderRadius: 0,
+    width: '100%',
+    boxSizing: 'border-box',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center', // Changed from 'space-between' to 'center'
+    marginBottom: 4,
+  }}
+>
+  <Typography variant="h6" sx={{ fontWeight: 500 }}>
+    Property Manager 
+  </Typography>
+  {/* Add more Navbar items here if needed */}
+</Paper>
+
       <Box
         sx={{
           flexGrow: 1,
           padding: { xs: '16px', sm: '32px' },
-          background: 'linear-gradient(135deg, #F43F5E 30%, #D7344A 90%)',
           display: 'flex',
           flexDirection: 'column',
           minHeight: '100vh',
         }}
       >
-        {/* Header */}
-        <Box
-          sx={{
-            marginBottom: '32px',
-            flexShrink: 0,
-          }}
-        >
-          <Typography
-            variant="h5" // Changed from h4 to h5 for smaller size
-            sx={{
-              fontWeight: 700,
-              textAlign: 'center',
-              color: 'white',
-              textTransform: 'uppercase',
-              letterSpacing: '2px',
-              fontFamily: 'Roboto, sans-serif',
-              whiteSpace: 'nowrap', // Prevents text from wrapping to multiple lines
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }, // Responsive font sizes
-            }}
-          >
-            Property Manager
-          </Typography>
-        </Box>
+        
 
         {/* Properties Grid */}
         <Box
@@ -246,7 +244,7 @@ function Dashboard() {
 
                     {/* Settings Button */}
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <Link to={`/survey/${property.id}`} style={{ textDecoration: 'none' }}>
+                      <Link to={`/onboarding/${property.id}`} style={{ textDecoration: 'none' }}>
                         <Button
                           variant="contained"
                           sx={{

@@ -1,6 +1,6 @@
 // src/Survey.js
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -9,20 +9,19 @@ import {
   Collapse,
   FormControlLabel,
   Switch,
-  LinearProgress,
+  Divider,
+  Slider,
   Grid,
   Paper,
-  Divider,
+  LinearProgress,
   Container,
-  Slider,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import RefreshIcon from '@mui/icons-material/Refresh'; // Icon for reset button
+import PropTypes from 'prop-types';
 
-function Survey() {
-  const { propertyId } = useParams();
+function Survey({ propertyId, onClose }) {
   const navigate = useNavigate();
 
   // Define all boolean fields to ensure they are always present
@@ -77,9 +76,9 @@ function Survey() {
   };
 
   const [formData, setFormData] = useState(initialFormData);
+  const [initialFormDataState, setInitialFormDataState] = useState(initialFormData); // For cancel functionality
   const [propertyName, setPropertyName] = useState('');
   const [editingFields, setEditingFields] = useState({});
-  const [tempPropertyName, setTempPropertyName] = useState('');
   const [progress, setProgress] = useState(0);
 
   // Load initial data
@@ -113,21 +112,25 @@ function Survey() {
           }
 
           setFormData(mergedData);
+          setInitialFormDataState(mergedData); // Set initial state
           calculateProgress(mergedData);
         } else {
           // If surveyData doesn't exist, use initialFormData
           setFormData(initialFormData);
+          setInitialFormDataState(initialFormData); // Set initial state
           calculateProgress(initialFormData);
         }
       } else {
         // If property doesn't exist, use initialFormData
         setFormData(initialFormData);
+        setInitialFormDataState(initialFormData); // Set initial state
         calculateProgress(initialFormData);
       }
     } catch (error) {
       console.error('Error loading property data:', error);
       // In case of error, fallback to initialFormData
       setFormData(initialFormData);
+      setInitialFormDataState(initialFormData); // Set initial state
       calculateProgress(initialFormData);
     }
   }, [propertyId]);
@@ -172,6 +175,7 @@ function Survey() {
 
       localStorage.setItem('properties', JSON.stringify(updatedProperties));
       console.log('Data saved to localStorage:', updatedProperties);
+      setInitialFormDataState(formData); // Update initial state after saving
     } catch (error) {
       console.error('Error saving property data:', error);
     }
@@ -198,20 +202,17 @@ function Survey() {
 
   // Handlers for Property Name Editing
   const handleEditPropertyName = () => {
-    setTempPropertyName(propertyName);
     setEditingFields(prev => ({ ...prev, propertyName: true }));
   };
 
   const handleCancelEditPropertyName = () => {
     setEditingFields(prev => ({ ...prev, propertyName: false }));
-    setTempPropertyName('');
+    // Optionally, reset propertyName if needed
   };
 
   const handleSavePropertyName = () => {
-    if ((tempPropertyName || '').trim() === '') return;
-    setPropertyName((tempPropertyName || '').trim());
+    if ((propertyName || '').trim() === '') return;
     setEditingFields(prev => ({ ...prev, propertyName: false }));
-    setTempPropertyName('');
     saveToLocalStorage();
   };
 
@@ -221,10 +222,24 @@ function Survey() {
     calculateProgress({ ...formData, [field]: value });
   };
 
+  // Handle form submission with Save and Cancel
   const handleSubmit = (e) => {
     e.preventDefault();
     saveToLocalStorage();
-    navigate('/dashboard');
+    // Collapse Concierge Training after saving
+    if (onClose && typeof onClose === 'function') {
+      onClose();
+    }
+  };
+
+  // Handle Cancel action to revert changes and collapse section
+  const handleCancel = () => {
+    setFormData(initialFormDataState);
+    calculateProgress(initialFormDataState);
+    // Collapse Concierge Training after cancelling
+    if (onClose && typeof onClose === 'function') {
+      onClose();
+    }
   };
 
   const handleBackToDashboard = () => {
@@ -247,6 +262,7 @@ function Survey() {
         });
         localStorage.setItem('properties', JSON.stringify(updatedProperties));
         setFormData(initialFormData);
+        setInitialFormDataState(initialFormData);
         setProgress(0);
         window.location.reload(); // Reload to ensure all components reflect the reset
       } catch (error) {
@@ -370,153 +386,18 @@ function Survey() {
         alignItems: 'center',
         paddingY: { xs: '10px', sm: '20px' },
         fontFamily: 'Inter, sans-serif',
-        minHeight: '100vh',
-        backgroundColor: '#f5f5f5',
       }}
     >
 
-      {/* Back to Dashboard Button and Reset Button */}
-      <Box sx={{ width: '100%', maxWidth: '800px', marginBottom: '2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: { xs: '10px', sm: '0' } }}>
-        <Button
-          variant="text"
-          onClick={handleBackToDashboard}
-          startIcon={<ArrowBackIcon />}
-          sx={{
-            color: '#F43F5E',
-            textTransform: 'none',
-            whiteSpace: 'nowrap',
-            '&:hover': {
-              backgroundColor: 'transparent',
-              color: '#D43852',
-            },
-            borderRadius: '0px', // Removed border radius
-            paddingX: 0,
-            fontSize: '15px',
-          }}
-        >
-          Back to Dashboard
-        </Button>
-      </Box>
-
-      {/* Navbar */}
+      {/* Host Information Section */}
       <Paper
         elevation={3}
         sx={{
           width: '100%',
           maxWidth: '800px',
-          padding: { xs: '10px 15px', sm: '15px 30px' }, // Responsive padding
-          backgroundColor: '#F43F5E', // Branding color
-          marginBottom: '20px',
-          borderRadius: '0px', // Removed border radius
-        }}
-      >
-        <Typography
-          variant="h6"
-          sx={{
-            fontWeight: 600,
-            letterSpacing: '1px',
-            color: 'white', // White text for contrast
-            textAlign: 'center',
-          }}
-        >
-          Property Settings
-        </Typography>
-      </Paper>
-      
-      {/* Property Name Section */}
-      <Paper
-        elevation={3}
-        sx={{
-          width: '90%',
-          maxWidth: '800px',
           backgroundColor: 'white',
-          padding: { xs: '15px 20px', sm: '20px 30px' }, // Responsive padding
-          borderRadius: '0px', // Removed border radius
-          boxShadow: 3,
-          marginBottom: '30px',
-        }}
-      >
-        <Grid container alignItems="center" justifyContent="space-between">
-          <Grid item xs={12} sm={8}>
-            <Typography variant="h6" sx={{ fontWeight: 500 }}>
-              Property Name: {propertyName || 'N/A'}
-            </Typography>
-          </Grid>
-          <Grid item xs={12} sm={4} sx={{ textAlign: { xs: 'left', sm: 'right' }, marginTop: { xs: '10px', sm: '0' } }}>
-            {!editingFields.propertyName ? (
-              <Button
-                variant="text"
-                onClick={handleEditPropertyName}
-                sx={{
-                  color: '#F43F5E', // Branding color
-                  textTransform: 'none',
-                  '&:hover': {
-                    color: '#D43852', // Darker shade on hover
-                  },
-                  borderRadius: '0px', // Removed border radius
-                }}
-              >
-                Edit
-              </Button>
-            ) : (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                <TextField
-                  value={tempPropertyName}
-                  onChange={(e) => setTempPropertyName(e.target.value)}
-                  variant="outlined"
-                  size="small"
-                  label="Property Name"
-                  sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 'auto' } }}
-                />
-                <Button
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={handleSavePropertyName}
-                  sx={{
-                    backgroundColor: '#F43F5E',
-                    color: 'white',
-                    borderRadius: '0px', // Removed border radius
-                    textTransform: 'none',
-                    '&:hover': {
-                      backgroundColor: '#D43852',
-                    },
-                  }}
-                  disabled={!(tempPropertyName || '').trim()}
-                >
-                  Save
-                </Button>
-                <Button
-                  variant="text"
-                  startIcon={<CancelIcon />}
-                  onClick={handleCancelEditPropertyName}
-                  sx={{
-                    color: '#F43F5E',
-                    textTransform: 'none',
-                    '&:hover': {
-                      color: '#D43852',
-                    },
-                    borderRadius: '0px', // Removed border radius
-                  }}
-                >
-                  Cancel
-                </Button>
-              </Box>
-            )}
-          </Grid>
-        </Grid>
-      </Paper>
-
-
-
-      {/* Main Content Section */}
-      <Paper
-        elevation={3}
-        sx={{
-          width: '90%',
-          maxWidth: '800px',
-          backgroundColor: 'white',
-          padding: { xs: '20px', sm: '30px' }, // Responsive padding
-          borderRadius: '0px', // Removed border radius
+          padding: { xs: '15px 20px', sm: '20px 30px' },
+          borderRadius: '0px',
           boxShadow: 3,
           marginBottom: '30px',
         }}
@@ -533,15 +414,12 @@ function Survey() {
                   {formData.hostInfo || 'N/A'}
                 </Typography>
                 <Button
-                  variant="text"
+                  variant="outlined"
                   onClick={() => setEditingFields(prev => ({ ...prev, hostInfo: true }))}
                   sx={{
-                    color: '#F43F5E', // Branding color
+                    color: '#F43F5E',
+                    borderColor: '#F43F5E',
                     textTransform: 'none',
-                    '&:hover': {
-                      color: '#D43852',
-                    },
-                    borderRadius: '0px', // Removed border radius
                   }}
                 >
                   Edit
@@ -556,21 +434,18 @@ function Survey() {
                   value={formData.hostInfo}
                   onChange={(e) => handleChange('hostInfo', e.target.value)}
                   variant="outlined"
-                  sx={{ marginBottom: '20px' }}
+                  sx={{ marginBottom: '20px', borderRadius: '0px' }}
                   placeholder="Tell us about yourself as a host"
                 />
-                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Box sx={{ display: 'flex', gap: 2 }}>
                   <Button
-                    variant="text"
+                    variant="outlined"
                     startIcon={<CancelIcon />}
                     onClick={() => setEditingFields(prev => ({ ...prev, hostInfo: false }))}
                     sx={{
                       color: '#F43F5E',
+                      borderColor: '#F43F5E',
                       textTransform: 'none',
-                      '&:hover': {
-                        color: '#D43852',
-                      },
-                      borderRadius: '0px', // Removed border radius
                     }}
                   >
                     Cancel
@@ -581,15 +456,15 @@ function Survey() {
                     onClick={() => {
                       setEditingFields(prev => ({ ...prev, hostInfo: false }));
                       saveToLocalStorage();
+                      // Optionally, you can collapse the section here if needed
                     }}
                     sx={{
                       backgroundColor: '#F43F5E',
                       color: 'white',
-                      borderRadius: '0px', // Removed border radius
+                      textTransform: 'none',
                       '&:hover': {
                         backgroundColor: '#D43852',
                       },
-                      textTransform: 'none',
                     }}
                   >
                     Save
@@ -612,7 +487,17 @@ function Survey() {
                   <Switch
                     checked={formData[question.label]}
                     onChange={(e) => handleChange(question.label, e.target.checked)}
-                    color="primary"
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#F43F5E',
+                        '&:hover': {
+                          backgroundColor: 'rgba(244,63,94, 0.08)',
+                        },
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#F43F5E',
+                      },
+                    }}
                   />
                 }
                 label={formData[question.label] ? 'Yes' : 'No'}
@@ -631,7 +516,7 @@ function Survey() {
                       variant="outlined"
                       multiline
                       rows={2}
-                      sx={{ marginBottom: 2, borderRadius: '0px' }} // Removed border radius if any
+                      sx={{ marginBottom: 2, borderRadius: '0px' }}
                     />
                   ))}
                 </Box>
@@ -639,30 +524,43 @@ function Survey() {
             </Box>
           ))}
 
+       
+       
           <Divider sx={{ marginY: '20px' }} />
 
-          
-
-          {/* Submit Button */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '30px' }}>
+          {/* Save and Cancel Buttons */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '30px', gap: 2 }}>
             <Button
-              type="submit"
-              variant="contained"
+              type="button"
+              variant="outlined"
+              startIcon={<CancelIcon />}
+              onClick={handleCancel}
               sx={{
-                backgroundColor: '#F43F5E',
-                color: 'white',
-                padding: '12px 40px',
-                borderRadius: '0px', // Ensures no border radius
-                '&:hover': {
-                  backgroundColor: '#D43852',
-                },
-                width: { xs: '100%', sm: 'auto' },
-                maxWidth: '250px',
+                color: '#F43F5E',
+                borderColor: '#F43F5E',
                 textTransform: 'none',
+                padding: '10px 20px',
                 fontSize: '16px',
               }}
             >
-              Submit
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              startIcon={<SaveIcon />}
+              sx={{
+                backgroundColor: '#F43F5E',
+                color: 'white',
+                textTransform: 'none',
+                padding: '10px 20px',
+                fontSize: '16px',
+                '&:hover': {
+                  backgroundColor: '#D43852',
+                },
+              }}
+            >
+              Save
             </Button>
           </Box>
         </form>
@@ -670,5 +568,14 @@ function Survey() {
     </Container>
   );
 }
+
+// Define PropTypes for better type checking
+Survey.propTypes = {
+  propertyId: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number
+  ]).isRequired,
+  onClose: PropTypes.func.isRequired,
+};
 
 export default Survey;
