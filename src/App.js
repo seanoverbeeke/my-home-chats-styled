@@ -8,6 +8,9 @@ import Dashboard from './Dashboard';
 import Onboarding from './Onboarding';
 import Survey from './Survey';
 import Activate from './Activate'; // Import Activate component
+import Billing from './Billing'; // Import Billing component
+import DeletePage from './Deletepage'; // Import DeletePage component
+import Privacy from './Privacy'; // Import Privacy component
 import theme from './theme';
 
 function App() {
@@ -29,6 +32,12 @@ function App() {
             <Route path="/activate/:propertyId" element={<Activate />} />
             {/* Dashboard Route */}
             <Route path="/dashboard" element={<Dashboard />} />
+            {/* Billing Route */}
+            <Route path="/billing" element={<Billing />} />
+            {/* Delete Account Route */}
+            <Route path="/delete-account" element={<DeletePage />} />
+            {/* Privacy Policy Route */}
+            <Route path="/privacy" element={<Privacy />} />
             {/* Add more routes here as needed */}
             {/* Optional: Catch-all route for 404 Not Found */}
             <Route path="*" element={<NotFound />} />
